@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Pencil, RotateCcw, UserMinus, Wallet } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
-import { invoiceStatus, invoiceTotals, firstOfMonth, statusMeta } from "@/lib/fees";
-import { monthDue, monthKey, monthsBetween } from "@/lib/invoicing";
-import { formatDate, formatDH, formatMonth } from "@/lib/format";
+import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
+import { billingAnchor, cycleAt, cycleIndexForDate, expectedDue, MAX_BILLING_MONTHS, monthKey, type BillingCycle } from "@/lib/invoicing";
+import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Avatar, Badge, btnGhost, btnPrimary, Card, td, th } from "@/components/ui";
 import { ensureMonthlyInvoice, openInvoiceForMonth } from "../../invoices/actions";
@@ -44,24 +44,32 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
   ];
 
   const activeEnrollments = student.enrollments.filter((e) => e.status === "ACTIVE");
-  const currentMonth = firstOfMonth();
+  const anchor = billingAnchor(student.enrollments);
+  const now = new Date();
   const invoiceByMonth = new Map(student.invoices.map((f) => [monthKey(f.month), f]));
-  const earliest = activeEnrollments.reduce<Date | null>(
-    (min, e) => (min === null || e.startedAt < min ? e.startedAt : min),
-    null,
-  );
-  const monthMap = new Map<string, Date>();
-  for (const m of monthsBetween(earliest ?? currentMonth, currentMonth)) monthMap.set(monthKey(m), m);
-  for (const f of student.invoices) monthMap.set(monthKey(f.month), f.month);
-  const monthRows = [...monthMap.entries()]
-    .map(([key, month]) => ({
+
+  const cycleMap = new Map<string, BillingCycle>();
+  if (anchor) {
+    const currentIndex = cycleIndexForDate(anchor, now);
+    const firstIndex = Math.max(0, currentIndex - (MAX_BILLING_MONTHS - 1));
+    for (let index = firstIndex; index <= currentIndex; index++) {
+      const cycle = cycleAt(anchor, index);
+      cycleMap.set(monthKey(cycle.month), cycle);
+    }
+  }
+  for (const f of student.invoices) {
+    cycleMap.set(monthKey(f.month), { index: 0, month: f.month, start: f.periodStart, end: f.periodEnd, dueDate: f.dueDate });
+  }
+
+  const cycleRows = [...cycleMap.entries()]
+    .map(([key, cycle]) => ({
       key,
-      month,
+      cycle,
       invoice: invoiceByMonth.get(key) ?? null,
-      due: monthDue(activeEnrollments, month).toNumber(),
+      due: expectedDue(activeEnrollments, cycle).toNumber(),
     }))
     .filter((r) => r.invoice || r.due > 0)
-    .sort((a, b) => b.month.getTime() - a.month.getTime());
+    .sort((a, b) => b.cycle.start.getTime() - a.cycle.start.getTime());
 
   return (
     <>
@@ -80,7 +88,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
         <div className="flex flex-wrap items-center gap-2">
           <form action={ensureMonthlyInvoice.bind(null, id)}>
             <button className={btnPrimary}>
-              <Wallet size={15} /> Encaisser le mois
+              <Wallet size={15} /> Encaisser la période en cours
             </button>
           </form>
           <Link href={`/admin/students/${id}/edit`} className={btnGhost}>
@@ -159,7 +167,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
             <table className="w-full">
               <thead className="border-y border-line bg-slate-50/70">
                 <tr>
-                  <th className={th}>Mois</th>
+                  <th className={th}>Période</th>
                   <th className={th}>Matières</th>
                   <th className={th}>Dû</th>
                   <th className={th}>Payé</th>
@@ -168,13 +176,16 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {monthRows.map(({ key, month, invoice, due }) => {
+                {cycleRows.map(({ key, cycle, invoice, due }) => {
                   const t = invoice ? invoiceTotals(invoice) : null;
                   const meta = invoice ? statusMeta[invoiceStatus(invoice)] : null;
                   const labels = (invoice?.lines.map((l) => l.label) ?? activeEnrollments.map((e) => e.group.name)).join(", ");
                   return (
                     <tr key={key}>
-                      <td className={`${td} whitespace-nowrap capitalize`}>{formatMonth(month)}</td>
+                      <td className={`${td} whitespace-nowrap`}>
+                        <span className="font-medium">{formatPeriod(cycle.start, cycle.end)}</span>
+                        <span className="block text-xs text-muted">échéance {formatDate(cycle.dueDate)}</span>
+                      </td>
                       <td className={`${td} max-w-56 truncate`}>{labels}</td>
                       <td className={td}>{formatDH(t ? t.due : due)}</td>
                       <td className={td}>{t ? formatDH(t.paid) : "—"}</td>
@@ -198,7 +209,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
                     </tr>
                   );
                 })}
-                {!monthRows.length && (
+                {!cycleRows.length && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted">
                       Aucune facture.

@@ -199,14 +199,17 @@ model Enrollment {
   @@index([groupId])
 }
 
-// ─── Finance: one Invoice per student per month, many Payments ─────────────
-// The invoice total is the sum of its lines (one line per enrollment). Billing
-// is per whole month: enrolling late still bills the full month.
+// ─── Finance: one Invoice per student per billing cycle, many Payments ─────
+// A cycle starts on the student's enrollment day and lasts one month (clamped
+// for short months). The first cycle bills the full monthly fee (no proration).
+// Due date = cycle end + 5 days.
 model Invoice {
-  id        Int      @id @default(autoincrement())
-  studentId Int
-  month     DateTime // always the 1st of the month (UTC)
-  dueDate   DateTime
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  month       DateTime // 1st of the month containing periodStart (UTC) — unique per student
+  periodStart DateTime // cycle start (inclusive)
+  periodEnd   DateTime // cycle end (exclusive); the next cycle starts here
+  dueDate     DateTime // periodEnd + 5 days
 
   student  Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   lines    InvoiceLine[]
@@ -214,6 +217,7 @@ model Invoice {
 
   @@unique([studentId, month])
   @@index([month])
+  @@index([periodStart])
 }
 
 model InvoiceLine {

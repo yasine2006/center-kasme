@@ -9,6 +9,9 @@ export const formatDate = (d: Date | string, opts: Intl.DateTimeFormatOptions = 
 export const formatMonth = (d: Date | string) =>
   new Date(d).toLocaleDateString("fr-FR", { timeZone: "UTC", month: "long", year: "numeric" });
 
+/** A billing cycle, e.g. "12/11/2026 → 12/12/2026". */
+export const formatPeriod = (start: Date | string, end: Date | string) => `${formatDate(start)} → ${formatDate(end)}`;
+
 export const formatLongDate = (d = new Date()) => {
   const s = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   return s.replace(/(^|\s)(\p{L})/gu, (_, sp, c) => sp + c.toUpperCase());

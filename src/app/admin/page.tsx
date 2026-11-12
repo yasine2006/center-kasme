@@ -62,7 +62,7 @@ export default async function AdminDashboard() {
       include: { group: { include: { specialty: true } } },
     }),
     db.invoice.findMany({
-      where: { month, student: { schoolId, archived: false } },
+      where: { student: { schoolId, archived: false }, periodStart: { lte: now }, periodEnd: { gt: now } },
       include: { payments: true, lines: { include: { enrollment: { include: { group: true } } } } },
     }),
     db.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 3 }),

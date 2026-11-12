@@ -3,6 +3,10 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 
 export const MAX_BILLING_MONTHS = 12;
+/** An invoice is due this many days after the end of its cycle. */
+export const DUE_DAYS_AFTER_CYCLE = 5;
+
+const DAY = 86_400_000;
 
 export type EnrollmentForBilling = {
   id: number;
@@ -11,67 +15,108 @@ export type EnrollmentForBilling = {
   group: { name: string };
 };
 
+/**
+ * One billing cycle for one student.
+ * - `start` is the enrollment day (clamped for short months).
+ * - `end` is the start of the next cycle (exclusive).
+ * - `dueDate` = `end` + 5 days.
+ */
+export type BillingCycle = {
+  index: number;
+  month: Date; // 1st of the month containing `start` — used for the DB unique key
+  start: Date;
+  end: Date;
+  dueDate: Date;
+};
+
 export const monthStart = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
-export const monthEnd = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));
-export const addMonths = (d: Date, n: number) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + n, 1));
 export const monthKey = (d: Date) => d.toISOString().slice(0, 7);
 export const parseMonthKey = (key: string) => (/^\d{4}-\d{2}$/.test(key) ? new Date(`${key}-01T00:00:00.000Z`) : null);
 
-export function monthsBetween(from: Date, to: Date, max = MAX_BILLING_MONTHS) {
-  const out: Date[] = [];
-  let cur = monthStart(from);
-  const last = monthStart(to);
-  while (cur.getTime() <= last.getTime() && out.length < max) {
-    out.push(cur);
-    cur = addMonths(cur, 1);
-  }
-  return out.reverse();
+export const addDays = (date: Date, n: number) => new Date(date.getTime() + n * DAY);
+
+/** Adds `n` months, keeping the day-of-month and clamping to the target month's last day. */
+export function addMonthsClamped(date: Date, n: number) {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + n;
+  const day = date.getUTCDate();
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(day, lastDay)));
 }
 
-export const billableEnrollments = <T extends { startedAt: Date }>(enrollments: T[], month: Date) => {
-  const end = monthEnd(month);
-  return enrollments.filter((e) => e.startedAt.getTime() <= end.getTime());
-};
+/** The student's billing anchor: the date of their very first enrollment. */
+export const billingAnchor = <T extends { startedAt: Date }>(enrollments: T[]) =>
+  enrollments.reduce<Date | null>((min, e) => (min === null || e.startedAt < min ? e.startedAt : min), null);
 
-export const monthDue = (enrollments: EnrollmentForBilling[], month: Date) =>
-  billableEnrollments(enrollments, month).reduce((sum, e) => sum.plus(new Prisma.Decimal(e.monthlyFee.toString())), new Prisma.Decimal(0));
+/** Cycle number `index` for a student anchored on `anchor` (index 0 = first cycle). */
+export function cycleAt(anchor: Date, index: number): BillingCycle {
+  const start = addMonthsClamped(anchor, index);
+  const end = addMonthsClamped(anchor, index + 1);
+  return { index, month: monthStart(start), start, end, dueDate: addDays(end, DUE_DAYS_AFTER_CYCLE) };
+}
+
+/** Index of the cycle that contains `date` for a student anchored on `anchor`. */
+export function cycleIndexForDate(anchor: Date, date: Date) {
+  let index = (date.getUTCFullYear() - anchor.getUTCFullYear()) * 12 + (date.getUTCMonth() - anchor.getUTCMonth());
+  if (date.getTime() < addMonthsClamped(anchor, index).getTime()) index -= 1;
+  return index;
+}
+
+export const cycleForDate = (anchor: Date, date: Date) => cycleAt(anchor, cycleIndexForDate(anchor, date));
+
+/** Cycle that starts in the calendar month `month` (1st of month). */
+export function cycleForMonth(anchor: Date, month: Date) {
+  const index = (month.getUTCFullYear() - anchor.getUTCFullYear()) * 12 + (month.getUTCMonth() - anchor.getUTCMonth());
+  return cycleAt(anchor, index);
+}
+
+/** Enrollments that exist before the end of the cycle are billed in full (no proration). */
+export const enrollmentsBillableFor = <T extends { startedAt: Date }>(enrollments: T[], periodEnd: Date) =>
+  enrollments.filter((e) => e.startedAt.getTime() < periodEnd.getTime());
+
+export const expectedDue = (enrollments: EnrollmentForBilling[], cycle: BillingCycle) =>
+  enrollmentsBillableFor(enrollments, cycle.end).reduce(
+    (sum, e) => sum.plus(new Prisma.Decimal(e.monthlyFee.toString())),
+    new Prisma.Decimal(0),
+  );
 
 type Tx = Prisma.TransactionClient;
 
-export async function ensureInvoiceForMonth(
+export async function ensureInvoiceForCycle(
   tx: Tx,
   studentId: number,
-  month: Date,
+  cycle: BillingCycle,
   enrollments: EnrollmentForBilling[],
 ) {
-  const existing = await tx.invoice.findUnique({ where: { studentId_month: { studentId, month } } });
+  const existing = await tx.invoice.findUnique({ where: { studentId_month: { studentId, month: cycle.month } } });
   if (existing) return existing;
 
-  const active = billableEnrollments(enrollments, month);
+  const active = enrollmentsBillableFor(enrollments, cycle.end);
   if (!active.length) return null;
 
   return tx.invoice
     .create({
       data: {
         studentId,
-        month,
-        dueDate: new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 5)),
+        month: cycle.month,
+        periodStart: cycle.start,
+        periodEnd: cycle.end,
+        dueDate: cycle.dueDate,
         lines: { create: active.map((e) => ({ enrollmentId: e.id, label: e.group.name, amount: e.monthlyFee })) },
       },
     })
     .catch(async (error) => {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        return tx.invoice.findUnique({ where: { studentId_month: { studentId, month } } });
+        return tx.invoice.findUnique({ where: { studentId_month: { studentId, month: cycle.month } } });
       }
       throw error;
     });
 }
 
-type Planned = { studentId: number; month: Date; enrollments: EnrollmentForBilling[] };
+type Planned = { studentId: number; cycle: BillingCycle; enrollments: EnrollmentForBilling[] };
 
 async function planMissing(schoolId: number | undefined, upTo: Date): Promise<Planned[]> {
-  const last = monthStart(upTo);
-  const earliestMonth = addMonths(last, -(MAX_BILLING_MONTHS - 1));
+  const earliestMonth = addMonthsClamped(monthStart(upTo), -(MAX_BILLING_MONTHS - 1));
 
   const students = await db.student.findMany({
     where: {
@@ -83,30 +128,33 @@ async function planMissing(schoolId: number | undefined, upTo: Date): Promise<Pl
     select: {
       id: true,
       enrollments: {
-        where: { status: "ACTIVE" },
-        select: { id: true, startedAt: true, monthlyFee: true, group: { select: { name: true } } },
+        select: { id: true, status: true, startedAt: true, monthlyFee: true, group: { select: { name: true } } },
       },
     },
   });
   if (!students.length) return [];
 
   const existing = await db.invoice.findMany({
-    where: { studentId: { in: students.map((s) => s.id) }, month: { gte: earliestMonth, lte: last } },
+    where: { studentId: { in: students.map((s) => s.id) }, month: { gte: earliestMonth } },
     select: { studentId: true, month: true },
   });
   const taken = new Set(existing.map((i) => `${i.studentId}:${monthKey(i.month)}`));
 
   const plan: Planned[] = [];
   for (const s of students) {
-    const first = s.enrollments.reduce<Date | null>(
-      (min, e) => (min === null || e.startedAt < min ? e.startedAt : min),
-      null,
-    );
-    const from = first && monthStart(first).getTime() > earliestMonth.getTime() ? monthStart(first) : earliestMonth;
-    for (const month of monthsBetween(from, last)) {
-      if (taken.has(`${s.id}:${monthKey(month)}`)) continue;
-      if (!billableEnrollments(s.enrollments, month).length) continue;
-      plan.push({ studentId: s.id, month, enrollments: s.enrollments });
+    const anchor = billingAnchor(s.enrollments);
+    if (!anchor) continue;
+
+    const active = s.enrollments.filter((e) => e.status === "ACTIVE");
+    if (!active.length) continue;
+
+    const currentIndex = cycleIndexForDate(anchor, upTo);
+    const firstIndex = Math.max(0, currentIndex - (MAX_BILLING_MONTHS - 1));
+    for (let index = firstIndex; index <= currentIndex; index++) {
+      const cycle = cycleAt(anchor, index);
+      if (taken.has(`${s.id}:${monthKey(cycle.month)}`)) continue;
+      if (!enrollmentsBillableFor(active, cycle.end).length) continue;
+      plan.push({ studentId: s.id, cycle, enrollments: active });
     }
   }
   return plan;
@@ -124,7 +172,7 @@ export async function generateMissingInvoices(schoolId?: number, upTo = new Date
   await db.$transaction(
     async (tx) => {
       for (const item of plan) {
-        const invoice = await ensureInvoiceForMonth(tx, item.studentId, item.month, item.enrollments);
+        const invoice = await ensureInvoiceForCycle(tx, item.studentId, item.cycle, item.enrollments);
         if (invoice) created++;
       }
     },

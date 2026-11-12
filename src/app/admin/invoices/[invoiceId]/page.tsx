@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
-import { formatDate, formatDH, formatMonth } from "@/lib/format";
+import { formatDate, formatDH, formatMonth, formatPeriod } from "@/lib/format";
 import { Avatar, Badge, Card, PageHeader, td, th } from "@/components/ui";
 import { PayForm } from "./pay-form";
 
@@ -58,7 +58,15 @@ export default async function InvoicePage({
       <Link href="/admin/invoices" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
         <ArrowLeft size={15} /> Retour aux factures
       </Link>
-      <PageHeader title="Facture mensuelle" subtitle={<span className="capitalize">{formatMonth(invoice.month)}</span>} />
+      <PageHeader
+        title="Facture de la période"
+        subtitle={
+          <span>
+            <span className="capitalize">{formatMonth(invoice.month)}</span> · {formatPeriod(invoice.periodStart, invoice.periodEnd)} · échéance{" "}
+            {formatDate(invoice.dueDate)}
+          </span>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">

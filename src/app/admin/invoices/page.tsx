@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { countMissingInvoices } from "@/lib/invoicing";
-import { formatDate, formatDH } from "@/lib/format";
+import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 import { AutoForm } from "@/components/auto-form";
 import { Pagination } from "@/components/pagination";
 import { Avatar, Badge, Card, inputCls, PageHeader, selectCls, td, th } from "@/components/ui";
@@ -77,7 +77,7 @@ export default async function InvoicesPage({
     if (!f) return [];
     const t = invoiceTotals(f);
     const last = f.payments[0];
-    return [{ invoice: f, t, status: invoiceStatus(f), last, date: last?.paidAt ?? f.dueDate }];
+    return [{ invoice: f, t, status: invoiceStatus(f), last }];
   });
   const total = countRows[0]?.count ?? 0;
   const exportQs = new URLSearchParams({ type: "invoices", format: "xlsx", ...Object.fromEntries(Object.entries({ q, specialtyId, method, status }).filter(([, v]) => v) as [string, string][]) });
@@ -145,7 +145,7 @@ export default async function InvoicesPage({
           <table className="w-full">
             <thead className="border-b border-line bg-slate-50/70">
               <tr>
-                <th className={th}>Date</th>
+                <th className={th}>Période</th>
                 <th className={th}>Élève</th>
                 <th className={th}>Matières</th>
                 <th className={th}>Statut</th>
@@ -155,12 +155,17 @@ export default async function InvoicesPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {pageRows.map(({ invoice: f, t, status: st, last, date }) => {
+              {pageRows.map(({ invoice: f, t, status: st, last }) => {
                 const meta = statusMeta[st];
                 const name = `${f.student.firstName} ${f.student.lastName}`;
                 return (
                   <tr key={f.id} className="hover:bg-slate-50/60">
-                    <td className={`${td} whitespace-nowrap`}>{formatDate(date)}</td>
+                    <td className={`${td} whitespace-nowrap`}>
+                      <span className="font-medium">{formatPeriod(f.periodStart, f.periodEnd)}</span>
+                      <span className="block text-xs text-muted">
+                        {last ? `payé le ${formatDate(last.paidAt)}` : `échéance ${formatDate(f.dueDate)}`}
+                      </span>
+                    </td>
                     <td className={td}>
                       <span className="flex items-center gap-2.5 font-medium">
                         <Avatar name={name} photo={f.student.photo} size={28} />

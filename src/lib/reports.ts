@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { studentSearchWhere } from "@/lib/search";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
-import { formatDate, formatMonth } from "@/lib/format";
+import { formatDate, formatPeriod } from "@/lib/format";
 
 export type Dataset = {
   title: string;
@@ -65,7 +65,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         return [
           `${i.student.lastName} ${i.student.firstName}`,
           i.lines.map((l) => l.label).join(", "),
-          formatMonth(i.month),
+          formatPeriod(i.periodStart, i.periodEnd),
           t.due,
           t.paid,
           t.remaining,
@@ -76,7 +76,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     return {
       title: unpaidOnly ? "Factures impayées" : "État des factures",
       subtitle: [periodLabel(sp), unpaidOnly ? "Factures non totalement payées" : undefined].filter(Boolean).join(" · ") || undefined,
-      head: ["Élève", "Matières", "Mois", "Dû", "Payé", "Reste", "Statut"],
+      head: ["Élève", "Matières", "Période", "Dû", "Payé", "Reste", "Statut"],
       rows,
       money: [3, 4, 5],
       slug: unpaidOnly ? "factures-impayees" : "etat-des-factures",
@@ -92,12 +92,12 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     return {
       title: "Reçus de paiement",
       subtitle: periodLabel(sp),
-      head: ["N° reçu", "Date", "Élève", "Mois", "Montant", "Mode"],
+      head: ["N° reçu", "Date", "Élève", "Période", "Montant", "Mode"],
       rows: payments.map((p) => [
         p.receiptNo ?? `#${p.id}`,
         formatDate(p.paidAt),
         `${p.invoice.student.lastName} ${p.invoice.student.firstName}`,
-        formatMonth(p.invoice.month),
+        formatPeriod(p.invoice.periodStart, p.invoice.periodEnd),
         Number(p.amount.toString()),
         methodLabel(p.method),
       ]),

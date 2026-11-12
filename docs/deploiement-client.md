@@ -168,8 +168,8 @@ Deux endpoints existent :
 
 | Endpoint | Quand | Rôle |
 |---|---|---|
-| `/api/cron/monthly-invoices` | le 1er du mois à 01:00 | génère les factures du mois |
-| `/api/cron/payment-reminders` | tous les jours à 09:00 | relances de paiement |
+| `/api/cron/monthly-invoices` | tous les jours à 01:00 | génère les factures des cycles qui démarrent |
+| `/api/cron/payment-reminders` | tous les jours à 09:00 | relances de paiement (tous les impayés) |
 
 Ils exigent :
 
@@ -184,7 +184,7 @@ Le fichier `vercel.json` déclare les deux jobs :
 ```json
 {
   "crons": [
-    { "path": "/api/cron/monthly-invoices", "schedule": "0 0 1 * *" },
+    { "path": "/api/cron/monthly-invoices", "schedule": "0 0 * * *" },
     { "path": "/api/cron/payment-reminders", "schedule": "0 8 * * *" }
   ]
 }
@@ -200,12 +200,12 @@ Vercel envoie automatiquement `Authorization: Bearer <CRON_SECRET>` si la variab
 
 Si tu préfères un cron externe, appelle les routes en **POST** avec le header `Authorization: Bearer <CRON_SECRET>`.
 
-**cron-job.org** : deux jobs, méthode POST, header `Authorization: Bearer <CRON_SECRET>`, fuseau `Africa/Casablanca`, planification `0 1 1 * *` et `0 9 * * *`.
+**cron-job.org** : deux jobs, méthode POST, header `Authorization: Bearer <CRON_SECRET>`, fuseau `Africa/Casablanca`, planification `0 1 * * *` et `0 9 * * *`.
 
 **crontab** :
 
 ```cron
-0 1 1 * * curl -fsS -X POST -H "Authorization: Bearer <CRON_SECRET>" https://<domaine>/api/cron/monthly-invoices
+0 1 * * * curl -fsS -X POST -H "Authorization: Bearer <CRON_SECRET>" https://<domaine>/api/cron/monthly-invoices
 0 9 * * * curl -fsS -X POST -H "Authorization: Bearer <CRON_SECRET>" https://<domaine>/api/cron/payment-reminders
 ```
 

@@ -3,7 +3,7 @@ import { FileText } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
-import { formatDH, formatMonth } from "@/lib/format";
+import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 import { Avatar, Badge } from "@/components/ui";
 import { requireStudent } from "../queries";
 
@@ -46,10 +46,11 @@ export default async function StudentPayments() {
             const last = f.payments[0];
             return (
               <li key={f.id} className="rounded-xl border border-line p-3.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium capitalize">{formatMonth(f.month)}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{formatPeriod(f.periodStart, f.periodEnd)}</span>
                   <Badge tone={meta.tone}>{meta.label}</Badge>
                 </div>
+                <p className="text-xs text-muted">échéance {formatDate(f.dueDate)}</p>
                 <p className="mt-1 truncate text-xs text-muted">{f.lines.map((l) => l.label).join(", ")}</p>
                 <div className="mt-1.5 flex items-center justify-between text-sm text-muted">
                   <span>

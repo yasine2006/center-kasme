@@ -1,7 +1,7 @@
 import "server-only";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatDate, formatDH, formatMonth } from "@/lib/format";
+import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 
 type School = { name: string; logo: string | null; address: string | null; phone: string | null; email: string | null };
 
@@ -33,7 +33,8 @@ export function receiptPdf(d: {
   receiptNo: string;
   paidAt: Date;
   student: string;
-  month: Date;
+  periodStart: Date;
+  periodEnd: Date;
   lines: { label: string; amount: number }[];
   amount: number;
   method: string;
@@ -58,14 +59,14 @@ export function receiptPdf(d: {
     head: [["Matière", "Montant"]],
     body: [
       ...d.lines.map((l) => [l.label, formatDH(l.amount)]),
-      ...(d.lines.length > 1 ? [["Total du mois", formatDH(d.due)]] : []),
+      ...(d.lines.length > 1 ? [["Total de la période", formatDH(d.due)]] : []),
     ],
     foot: [["Total payé à ce jour", formatDH(d.paidTotal)]],
     footStyles: { fillColor: [239, 245, 255], textColor: [15, 27, 51], fontStyle: "bold", halign: "right" },
   });
 
   const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
-  doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(60, 72, 95).text(`Élève : ${d.student} · Mois : ${formatMonth(d.month)} · ${d.method}`, 14, y);
+  doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(60, 72, 95).text(`Élève : ${d.student} · Période : ${formatPeriod(d.periodStart, d.periodEnd)} · ${d.method}`, 14, y);
   const y2 = y + 8;
   doc.setFillColor(239, 245, 255).roundedRect(14, y2, 84, 14, 2, 2, "F");
   doc.setFont("helvetica", "bold").setFontSize(12).setTextColor(...NAVY).text(`Montant reçu : ${formatDH(d.amount)}`, 18, y2 + 9);

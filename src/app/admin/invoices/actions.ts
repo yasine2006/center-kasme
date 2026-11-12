@@ -6,8 +6,16 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { invoiceTotals, firstOfMonth } from "@/lib/fees";
-import { ensureInvoiceForMonth, generateMissingInvoices, monthKey, monthStart } from "@/lib/invoicing";
+import { invoiceTotals } from "@/lib/fees";
+import {
+  billingAnchor,
+  cycleForDate,
+  cycleForMonth,
+  ensureInvoiceForCycle,
+  generateMissingInvoices,
+  monthKey,
+  parseMonthKey,
+} from "@/lib/invoicing";
 import { formatDH } from "@/lib/format";
 import { requireRole } from "@/lib/session";
 
@@ -98,33 +106,47 @@ export async function recordPayment(invoiceId: number, _: PayState, formData: Fo
   redirect("/admin/invoices");
 }
 
-/** Creates every missing monthly invoice for the school, up to the current month. */
+/** Creates every missing cycle invoice for the school, up to the current cycle. */
 export async function generateMonthlyInvoices() {
   const session = await requireRole("ADMIN");
   const created = await generateMissingInvoices(session.schoolId);
 
-  await audit(session, "CREATE", "Invoice", undefined, { generated: created, upTo: monthKey(firstOfMonth()) });
+  await audit(session, "CREATE", "Invoice", undefined, { generated: created, upTo: new Date().toISOString().slice(0, 10) });
   revalidatePath("/admin", "layout");
 }
 
 const monthSchema = z.string().regex(/^\d{4}-\d{2}$/, "Mois invalide");
 
-/** Opens (and creates if needed) one specific month's invoice so it can be paid on its own. */
+/** Opens (and creates if needed) the cycle that starts in a given month. */
 export async function openInvoiceForMonth(studentId: number, rawMonth: string) {
   const session = await requireRole("ADMIN");
   const parsed = monthSchema.safeParse(rawMonth);
   if (!parsed.success) return;
-  const month = monthStart(new Date(`${parsed.data}-01T00:00:00.000Z`));
+  const month = parseMonthKey(parsed.data);
+  if (!month) return;
 
   const student = await db.student.findFirst({
     where: { id: studentId, schoolId: session.schoolId },
-    include: { enrollments: { where: { status: "ACTIVE" }, include: { group: true } } },
+    include: { enrollments: { include: { group: true } } },
   });
   if (!student) return;
 
-  const existing = await db.invoice.findUnique({ where: { studentId_month: { studentId, month } } });
+  const anchor = billingAnchor(student.enrollments);
+  if (!anchor) {
+    await audit(session, "CREATE", "Invoice", undefined, { studentId, month: parsed.data, skipped: "no-enrollment" });
+    redirect(`/admin/enrollments?studentId=${studentId}`);
+  }
+
+  const cycle = cycleForMonth(anchor, month);
+  if (cycle.start.getTime() < anchor.getTime()) {
+    await audit(session, "CREATE", "Invoice", undefined, { studentId, month: parsed.data, skipped: "before-enrollment" });
+    redirect(`/admin/enrollments?studentId=${studentId}`);
+  }
+
+  const active = student.enrollments.filter((e) => e.status === "ACTIVE");
+  const existing = await db.invoice.findUnique({ where: { studentId_month: { studentId, month: cycle.month } } });
   const invoice = await db.$transaction(
-    (tx) => ensureInvoiceForMonth(tx, studentId, month, student.enrollments),
+    (tx) => ensureInvoiceForCycle(tx, studentId, cycle, active),
     { maxWait: 5000, timeout: 15000 },
   );
 
@@ -133,31 +155,45 @@ export async function openInvoiceForMonth(studentId: number, rawMonth: string) {
     redirect(`/admin/enrollments?studentId=${studentId}`);
   }
 
-  await audit(session, existing ? "UPDATE" : "CREATE", "Invoice", invoice.id, { studentId, month: parsed.data });
+  await audit(session, existing ? "UPDATE" : "CREATE", "Invoice", invoice.id, {
+    studentId,
+    month: parsed.data,
+    periodStart: cycle.start.toISOString(),
+    periodEnd: cycle.end.toISOString(),
+  });
   revalidatePath("/admin", "layout");
   redirect(`/admin/invoices/${invoice.id}`);
 }
 
-/** Opens (and creates if needed) the current month's invoice for one student so it can be paid right away. */
+/** Opens (and creates if needed) the cycle that is currently running for one student. */
 export async function ensureMonthlyInvoice(studentId: number) {
   const session = await requireRole("ADMIN");
-  const month = firstOfMonth();
 
   const student = await db.student.findFirst({
     where: { id: studentId, schoolId: session.schoolId },
-    include: { enrollments: { where: { status: "ACTIVE" }, include: { group: true } } },
+    include: { enrollments: { include: { group: true } } },
   });
   if (!student) return;
 
-  const existing = await db.invoice.findUnique({ where: { studentId_month: { studentId, month } } });
+  const anchor = billingAnchor(student.enrollments);
+  if (!anchor) redirect(`/admin/enrollments?studentId=${studentId}`);
+
+  const cycle = cycleForDate(anchor, new Date());
+  const active = student.enrollments.filter((e) => e.status === "ACTIVE");
+  const existing = await db.invoice.findUnique({ where: { studentId_month: { studentId, month: cycle.month } } });
   const invoice = await db.$transaction(
-    (tx) => ensureInvoiceForMonth(tx, studentId, month, student.enrollments),
+    (tx) => ensureInvoiceForCycle(tx, studentId, cycle, active),
     { maxWait: 5000, timeout: 15000 },
   );
 
   if (!invoice) redirect(`/admin/enrollments?studentId=${studentId}`); // nothing to bill yet
 
-  await audit(session, existing ? "UPDATE" : "CREATE", "Invoice", invoice.id, { studentId, month: monthKey(month) });
+  await audit(session, existing ? "UPDATE" : "CREATE", "Invoice", invoice.id, {
+    studentId,
+    month: monthKey(cycle.month),
+    periodStart: cycle.start.toISOString(),
+    periodEnd: cycle.end.toISOString(),
+  });
   revalidatePath("/admin", "layout");
   redirect(`/admin/invoices/${invoice.id}`);
 }

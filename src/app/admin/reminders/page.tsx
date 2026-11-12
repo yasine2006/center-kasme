@@ -13,8 +13,6 @@ import { remindAll, remindStudent } from "./actions";
 
 export const metadata: Metadata = { title: "Relances & impayés" };
 
-const fmtDay = (d: Date) => new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC", day: "2-digit", month: "2-digit" }).format(d);
-
 export default async function RemindersPage({
   searchParams,
 }: {
@@ -43,7 +41,7 @@ export default async function RemindersPage({
         title="Relances & impayés"
         subtitle={
           <>
-            Suivi des paiements de <b className="capitalize text-ink">{formatMonth(month)}</b> — {s.upToDate} élève(s) à jour, {s.late} en retard.
+            Cycles démarrant en <b className="capitalize text-ink">{formatMonth(month)}</b> — {s.upToDate} élève(s) à jour, {s.late} en retard.
           </>
         }
         action={
@@ -80,7 +78,7 @@ export default async function RemindersPage({
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Encaissé ce mois", value: formatDH(s.paid), hint: `sur ${formatDH(s.due)}`, tone: "text-emerald-600" },
+          { label: "Encaissé sur ces cycles", value: formatDH(s.paid), hint: `sur ${formatDH(s.due)}`, tone: "text-emerald-600" },
           { label: "Reste à encaisser", value: formatDH(s.remaining), hint: `${s.rows.filter((r) => r.remaining > 0).length} élève(s)`, tone: "text-rose-600" },
           { label: "À jour", value: String(s.upToDate), hint: "factures soldées", tone: "text-emerald-600" },
           { label: "En retard", value: String(s.late), hint: `dont ${s.missing} sans facture`, tone: "text-amber-600" },
@@ -205,7 +203,7 @@ export default async function RemindersPage({
               {!rows.length && (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-sm text-muted">
-                    Aucun élève actif pour {formatMonth(month)}.
+                    Aucun élève actif pour les cycles de {formatMonth(month)}.
                   </td>
                 </tr>
               )}
@@ -216,8 +214,8 @@ export default async function RemindersPage({
 
       <p className="mt-4 text-xs text-muted">
         Les rappels partent en <b>notification in-app</b> (élèves avec compte) et en <b>WhatsApp</b> au parent, une seule fois par
-        jour et par facture. Échéance : le <b>5</b> de chaque mois. Le cron <code>POST /api/cron/payment-reminders</code> relance
-        automatiquement les retards ({fmtDay(month)}).
+        jour et par facture. Échéance : <b>5 jours après la fin du cycle</b> (ex. cycle 12/11 → 12/12, échéance 17/12). Le cron{" "}
+        <code>GET /api/cron/payment-reminders</code> relance automatiquement tous les impayés.
       </p>
     </>
   );

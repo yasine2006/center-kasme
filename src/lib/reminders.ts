@@ -2,8 +2,8 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { invoiceTotals } from "@/lib/fees";
-import { formatDH, formatMonth } from "@/lib/format";
-import { billableEnrollments, monthKey, monthStart } from "@/lib/invoicing";
+import { formatDH, formatPeriod } from "@/lib/format";
+import { billingAnchor, cycleForMonth, enrollmentsBillableFor, monthKey, monthStart } from "@/lib/invoicing";
 
 export const REMINDER_TITLE = "Rappel de paiement";
 
@@ -24,6 +24,8 @@ export type ReminderRow = {
   daysLate: number;
   remindedAt: Date | null;
   remindedToday: boolean;
+  periodStart: Date | null;
+  periodEnd: Date | null;
   waHref: string | null;
 };
 
@@ -39,9 +41,12 @@ function normalizePhone(raw: string | null) {
   return /^\d{9,15}$/.test(digits) ? digits : null;
 }
 
-export function reminderText(row: Pick<ReminderRow, "firstName" | "remaining" | "daysLate">, month: Date) {
+export function reminderText(
+  row: Pick<ReminderRow, "firstName" | "remaining" | "daysLate" | "periodStart" | "periodEnd">,
+) {
   const late = row.daysLate > 0 ? ` (retard de ${row.daysLate} jour${row.daysLate > 1 ? "s" : ""})` : "";
-  return `Bonjour ${row.firstName}, la facture de ${formatMonth(month)} n'est pas encore réglée${late}. Reste à payer : ${formatDH(row.remaining)}. Merci de régulariser.`;
+  const period = row.periodStart && row.periodEnd ? ` de la période ${formatPeriod(row.periodStart, row.periodEnd)}` : "";
+  return `Bonjour ${row.firstName}, la facture${period} n'est pas encore réglée${late}. Reste à payer : ${formatDH(row.remaining)}. Merci de régulariser.`;
 }
 
 export async function reminderRows(schoolId: number, month: Date): Promise<ReminderRow[]> {
@@ -54,12 +59,16 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
       parentName: true,
       parentPhone: true,
       userId: true,
-      enrollments: { where: { status: "ACTIVE" }, select: { startedAt: true, monthlyFee: true } },
+      enrollments: {
+        select: { id: true, status: true, startedAt: true, monthlyFee: true, group: { select: { name: true } } },
+      },
       invoices: {
         where: { month },
         select: {
           id: true,
           dueDate: true,
+          periodStart: true,
+          periodEnd: true,
           lines: { select: { amount: true } },
           payments: { select: { amount: true } },
         },
@@ -87,14 +96,22 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
     if (log.createdAt >= sod) today.add(log.entityId);
   }
 
-  const fallbackDue = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 5));
   const now = new Date();
 
-  return students.map((s) => {
+  return students.flatMap((s) => {
+    const anchor = billingAnchor(s.enrollments);
+    if (!anchor) return [];
+
+    const cycle = cycleForMonth(anchor, month);
+    if (cycle.start.getTime() < anchor.getTime()) return []; // month before the first enrollment
+
+    const active = s.enrollments.filter((e) => e.status === "ACTIVE");
     const invoice = s.invoices[0] ?? null;
-    const expected = billableEnrollments(s.enrollments, month)
+    const expected = enrollmentsBillableFor(active, cycle.end)
       .reduce((sum, e) => sum.plus(new Prisma.Decimal(e.monthlyFee.toString())), new Prisma.Decimal(0))
       .toNumber();
+    if (!invoice && expected <= 0) return [];
+
     const totals = invoice ? invoiceTotals(invoice) : null;
     const due = totals ? totals.due : expected;
     const paid = totals ? totals.paid : 0;
@@ -106,12 +123,12 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
         : paid > 0
           ? "PARTIAL"
           : "UNPAID";
-    const dueDate = invoice?.dueDate ?? fallbackDue;
+    const dueDate = invoice?.dueDate ?? cycle.dueDate;
     const daysLate = remaining > 0 ? Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY)) : 0;
     const remindedAt = invoice ? (lastReminder.get(invoice.id) ?? null) : null;
     const phone = normalizePhone(s.parentPhone);
 
-    const row: Omit<ReminderRow, "waHref"> = {
+    const row: ReminderRow = {
       studentId: s.id,
       firstName: s.firstName,
       lastName: s.lastName,
@@ -126,14 +143,12 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
       daysLate,
       remindedAt,
       remindedToday: invoice ? today.has(invoice.id) : false,
+      periodStart: invoice?.periodStart ?? cycle.start,
+      periodEnd: invoice?.periodEnd ?? cycle.end,
+      waHref: null,
     };
-
-    return {
-      ...row,
-      waHref: phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(reminderText(row, month))}`
-        : null,
-    };
+    row.waHref = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(reminderText(row))}` : null;
+    return [row];
   });
 }
 
@@ -157,7 +172,7 @@ export async function sendReminders(schoolId: number, month: Date, opts: RemindO
   await db.$transaction(
     rows.map((r) =>
       db.notification.create({
-        data: { userId: r.userId!, title: REMINDER_TITLE, body: reminderText(r, month) },
+        data: { userId: r.userId!, title: REMINDER_TITLE, body: reminderText(r) },
       }),
     ),
   );
@@ -170,6 +185,83 @@ export async function sendReminders(schoolId: number, month: Date, opts: RemindO
       entity: "Invoice",
       entityId: r.invoiceId,
       details: { studentId: r.studentId, month: monthKey(month), remaining: r.remaining },
+    })),
+  });
+
+  return rows.length;
+}
+
+/**
+ * Cycle-agnostic reminders used by the daily cron: every invoice whose due date
+ * has passed and that is not fully paid. One notification per invoice per day.
+ */
+export async function sendOverdueReminders(schoolId: number, now = new Date()) {
+  const invoices = await db.invoice.findMany({
+    where: {
+      student: { schoolId, archived: false, status: "ACTIVE" },
+      dueDate: { lt: now },
+    },
+    include: {
+      lines: { select: { amount: true } },
+      payments: { select: { amount: true } },
+      student: { select: { id: true, firstName: true, lastName: true, userId: true } },
+    },
+    orderBy: { dueDate: "asc" },
+  });
+  if (!invoices.length) return 0;
+
+  const ids = invoices.map((i) => i.id);
+  const logs = await db.auditLog.findMany({
+    where: { schoolId, action: "REMINDER", entity: "Invoice", entityId: { in: ids } },
+    orderBy: { createdAt: "desc" },
+    select: { entityId: true, createdAt: true },
+  });
+  const today = new Set<number>();
+  const sod = startOfDay(now);
+  for (const log of logs) {
+    if (log.entityId !== null && log.createdAt >= sod) today.add(log.entityId);
+  }
+
+  const rows = invoices
+    .map((invoice) => {
+      const totals = invoiceTotals(invoice);
+      if (totals.remaining <= 0) return null;
+      if (!invoice.student.userId) return null;
+      if (today.has(invoice.id)) return null;
+      const daysLate = Math.max(0, Math.floor((now.getTime() - invoice.dueDate.getTime()) / DAY));
+      return {
+        invoiceId: invoice.id,
+        userId: invoice.student.userId,
+        studentId: invoice.student.id,
+        firstName: invoice.student.firstName,
+        remaining: totals.remaining,
+        daysLate,
+        periodStart: invoice.periodStart,
+        periodEnd: invoice.periodEnd,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+  if (!rows.length) return 0;
+
+  const actor = await db.user.findFirst({ where: { schoolId }, orderBy: { id: "asc" }, select: { id: true } });
+  if (!actor) return 0;
+
+  await db.$transaction(
+    rows.map((r) =>
+      db.notification.create({
+        data: { userId: r.userId, title: REMINDER_TITLE, body: reminderText(r) },
+      }),
+    ),
+  );
+
+  await db.auditLog.createMany({
+    data: rows.map((r) => ({
+      schoolId,
+      userId: actor.id,
+      action: "REMINDER",
+      entity: "Invoice",
+      entityId: r.invoiceId,
+      details: { studentId: r.studentId, month: monthKey(r.periodStart), remaining: r.remaining },
     })),
   });
 

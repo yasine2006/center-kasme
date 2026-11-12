@@ -1,7 +1,5 @@
 import { db } from "@/lib/db";
-import { firstOfMonth } from "@/lib/fees";
-import { monthKey } from "@/lib/invoicing";
-import { sendReminders } from "@/lib/reminders";
+import { sendOverdueReminders } from "@/lib/reminders";
 
 function isAuthorized(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -16,21 +14,18 @@ async function run(req: Request) {
     return Response.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const month = firstOfMonth();
   const schools = await db.school.findMany({ select: { id: true } });
   let sent = 0;
-  const skipped = 0;
 
   for (const school of schools) {
-    const count = await sendReminders(school.id, month, { onlyOverdue: true });
-    sent += count;
+    sent += await sendOverdueReminders(school.id);
   }
 
-  return Response.json({ ok: true, month: monthKey(month), sent, skipped });
+  return Response.json({ ok: true, sent, at: new Date().toISOString() });
 }
 
 /**
- * Payment reminders hook.
+ * Payment reminders hook (runs daily).
  * - Vercel Cron calls GET with `Authorization: Bearer <CRON_SECRET>`.
  * - Manual / external cron can call POST with the same header.
  */

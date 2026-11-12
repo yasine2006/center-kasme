@@ -136,7 +136,7 @@ Elles sont déjà configurées dans `vercel.json` (Vercel Cron) :
 
 | Endpoint | Planification (UTC) | Heure locale (UTC+1) |
 |---|---|---|
-| `/api/cron/monthly-invoices` | `0 0 1 * *` | le 1er du mois à 01:00 |
+| `/api/cron/monthly-invoices` | `0 0 * * *` | tous les jours à 01:00 |
 | `/api/cron/payment-reminders` | `0 8 * * *` | tous les jours à 09:00 |
 
 Vercel envoie automatiquement l'en-tête `Authorization: Bearer <CRON_SECRET>` dès que la variable `CRON_SECRET` existe sur le projet.
@@ -163,8 +163,8 @@ curl -fsS -X POST \
 
 | Règle | Détail |
 |---|---|
-| **Mensualités** | Une facture par élève et par mois. Chaque ligne correspond à une inscription active. Mois entier, sans prorata. |
-| **Échéance** | Le 5 de chaque mois. |
+| **Mensualités** | Une facture par élève et par cycle. Le cycle démarre le jour de la première inscription et dure un mois (jour identique le mois suivant, borné au dernier jour du mois). Premier cycle = mensualité complète, sans prorata. |
+| **Échéance** | 5 jours après la fin du cycle. Ex. inscription le 12/11 → cycle 12/11 → 12/12, échéance 17/12 ; cycle suivant 12/12 → 12/01, échéance 17/01. |
 | **Relances** | Notification in-app + lien WhatsApp (`wa.me`), une fois par jour et par facture. |
 | **Paiement par matière** | Un encaissement peut être affecté à une ligne de facture précise. |
 | **Retirer / réactiver une matière** | `STOPPED` / `ACTIVE` sans supprimer l'historique. |
