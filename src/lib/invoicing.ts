@@ -113,6 +113,35 @@ export async function ensureInvoiceForCycle(
     });
 }
 
+/**
+ * Creates (if needed) the invoice for the cycle that is running right now for
+ * one student. Called immediately after an enrollment so the admin can cash the
+ * period without waiting for the daily cron.
+ */
+export async function ensureCurrentInvoice(studentId: number, now = new Date()) {
+  const student = await db.student.findUnique({
+    where: { id: studentId },
+    select: {
+      enrollments: {
+        select: { id: true, status: true, startedAt: true, monthlyFee: true, group: { select: { name: true } } },
+      },
+    },
+  });
+  if (!student) return null;
+
+  const anchor = billingAnchor(student.enrollments);
+  if (!anchor) return null;
+
+  const active = student.enrollments.filter((e) => e.status === "ACTIVE");
+  if (!active.length) return null;
+
+  const cycle = cycleForDate(anchor, now);
+  return db.$transaction((tx) => ensureInvoiceForCycle(tx, studentId, cycle, active), {
+    maxWait: 5000,
+    timeout: 15000,
+  });
+}
+
 type Planned = { studentId: number; cycle: BillingCycle; enrollments: EnrollmentForBilling[] };
 
 async function planMissing(schoolId: number | undefined, upTo: Date): Promise<Planned[]> {

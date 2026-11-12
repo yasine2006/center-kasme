@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
+import { ensureCurrentInvoice } from "@/lib/invoicing";
 import { requireRole } from "@/lib/session";
 
 const schema = z.object({
@@ -11,7 +12,13 @@ const schema = z.object({
   groupId: z.coerce.number().int().positive("Groupe requis"),
 });
 
-export type EnrollFormState = { errors?: Record<string, string[] | undefined>; message?: string; ok?: boolean };
+export type EnrollFormState = {
+  errors?: Record<string, string[] | undefined>;
+  message?: string;
+  ok?: boolean;
+  /** Invoice of the cycle that just started, so the admin can cash it right away. */
+  invoiceId?: number | null;
+};
 
 export async function createEnrollment(_: EnrollFormState, formData: FormData): Promise<EnrollFormState> {
   const session = await requireRole("ADMIN");
@@ -36,9 +43,18 @@ export async function createEnrollment(_: EnrollFormState, formData: FormData): 
     await db.enrollment.create({ data: { studentId: student.id, groupId: group.id, monthlyFee: group.monthlyFee } });
   }
 
-  await audit(session, "CREATE", "Enrollment", student.id, { groupId: group.id });
+  // Bill the running cycle immediately instead of waiting for the daily cron.
+  // A failure here must not lose the enrollment: the cron will retry later.
+  let invoiceId: number | null = null;
+  try {
+    invoiceId = (await ensureCurrentInvoice(student.id))?.id ?? null;
+  } catch (error) {
+    console.error("ensureCurrentInvoice failed after enrollment", error);
+  }
+
+  await audit(session, "CREATE", "Enrollment", student.id, { groupId: group.id, invoiceId });
   revalidatePath("/admin", "layout");
-  return { ok: true };
+  return { ok: true, invoiceId };
 }
 
 export async function stopEnrollment(id: number) {
@@ -57,6 +73,11 @@ export async function reactivateEnrollment(id: number) {
   if (!e) return;
 
   await db.enrollment.update({ where: { id }, data: { status: "ACTIVE", stoppedAt: null } });
+  try {
+    await ensureCurrentInvoice(e.studentId);
+  } catch (error) {
+    console.error("ensureCurrentInvoice failed after reactivation", error);
+  }
   await audit(session, "UPDATE", "Enrollment", id, { status: "ACTIVE" });
   revalidatePath("/admin", "layout");
 }

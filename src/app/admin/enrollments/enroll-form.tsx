@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { btnPrimary, Card, Field, inputCls } from "@/components/ui";
 import { createEnrollment, type EnrollFormState } from "./actions";
@@ -45,7 +46,16 @@ export function EnrollForm({
           </select>
         </Field>
         {state.message && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.message}</p>}
-        {state.ok && <p className="text-sm text-emerald-600">Élève inscrit.</p>}
+        {state.ok && (
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            Élève inscrit et période facturée.{" "}
+            {state.invoiceId ? (
+              <Link href={`/admin/invoices/${state.invoiceId}`} className="font-semibold underline">
+                Encaisser maintenant →
+              </Link>
+            ) : null}
+          </p>
+        )}
         <button disabled={pending} className={`${btnPrimary} w-full`}>
           <UserPlus size={16} /> {pending ? "Inscription…" : "Inscrire l'élève"}
         </button>
