@@ -3,10 +3,16 @@ import { firstOfMonth } from "@/lib/fees";
 import { monthKey } from "@/lib/invoicing";
 import { sendReminders } from "@/lib/reminders";
 
-export async function POST(req: Request) {
+function isAuthorized(req: Request) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  return req.headers.get("authorization") === `Bearer ${secret}`;
+}
+
+async function run(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return Response.json({ error: "CRON_SECRET non configuré" }, { status: 503 });
-  if (req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!isAuthorized(req)) {
     return Response.json({ error: "Non autorisé" }, { status: 401 });
   }
 
@@ -23,6 +29,10 @@ export async function POST(req: Request) {
   return Response.json({ ok: true, month: monthKey(month), sent, skipped });
 }
 
-export async function GET() {
-  return Response.json({ error: "Méthode non autorisée" }, { status: 405 });
-}
+/**
+ * Payment reminders hook.
+ * - Vercel Cron calls GET with `Authorization: Bearer <CRON_SECRET>`.
+ * - Manual / external cron can call POST with the same header.
+ */
+export const GET = run;
+export const POST = run;

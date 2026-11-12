@@ -132,18 +132,22 @@ npm run db:blank-check
 
 ### 3.4 Tâches planifiées
 
-Les endpoints sont en **POST** :
+Elles sont déjà configurées dans `vercel.json` (Vercel Cron) :
 
-- `POST /api/cron/monthly-invoices` — le 1er de chaque mois à 01:00.
-- `POST /api/cron/payment-reminders` — tous les jours à 09:00.
+| Endpoint | Planification (UTC) | Heure locale (UTC+1) |
+|---|---|---|
+| `/api/cron/monthly-invoices` | `0 0 1 * *` | le 1er du mois à 01:00 |
+| `/api/cron/payment-reminders` | `0 8 * * *` | tous les jours à 09:00 |
 
-Header obligatoire :
+Vercel envoie automatiquement l'en-tête `Authorization: Bearer <CRON_SECRET>` dès que la variable `CRON_SECRET` existe sur le projet.
+
+Les routes acceptent **GET** (Vercel Cron) et **POST** (test manuel / cron externe). Header obligatoire :
 
 ```text
 Authorization: Bearer <CRON_SECRET>
 ```
 
-Exemple :
+Test manuel :
 
 ```bash
 curl -fsS -X POST \
@@ -151,7 +155,7 @@ curl -fsS -X POST \
   https://<domaine>/api/cron/monthly-invoices
 ```
 
-> Vercel Cron envoie des requêtes **GET**. Les routes actuelles n'acceptent que POST : utiliser un cron externe (crontab, cron-job.org, GitHub Actions) ou ajouter des handlers GET.
+> Sur le plan Hobby, Vercel limite à 2 cron jobs et à une exécution par jour maximum : les deux planifications ci-dessus respectent ces limites.
 
 ---
 

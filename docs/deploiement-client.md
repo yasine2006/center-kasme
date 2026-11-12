@@ -168,8 +168,8 @@ Deux endpoints existent :
 
 | Endpoint | Quand | Rôle |
 |---|---|---|
-| `POST /api/cron/monthly-invoices` | le 1er du mois à 01:00 | génère les factures du mois |
-| `POST /api/cron/payment-reminders` | tous les jours à 09:00 | relances de paiement |
+| `/api/cron/monthly-invoices` | le 1er du mois à 01:00 | génère les factures du mois |
+| `/api/cron/payment-reminders` | tous les jours à 09:00 | relances de paiement |
 
 Ils exigent :
 
@@ -177,39 +177,32 @@ Ils exigent :
 Authorization: Bearer <CRON_SECRET>
 ```
 
-### 6.1 Pourquoi pas Vercel Cron
+### 6.1 Vercel Cron (déjà configuré)
 
-Le Vercel Cron natif envoie des requêtes **GET**. Les routes n'acceptent que **POST** (GET → `405`). Il faut donc un cron externe.
+Le fichier `vercel.json` déclare les deux jobs :
 
-### 6.2 Options
-
-**Option A — cron-job.org** (le plus simple)
-
-1. Créer deux jobs.
-2. URL : `https://<domaine>/api/cron/monthly-invoices` (et `.../payment-reminders`)
-3. Méthode : **POST**
-4. Header : `Authorization: Bearer <CRON_SECRET>`
-5. Planification : `0 1 1 * *` et `0 9 * * *` (fuseau du centre, ex. `Africa/Casablanca`).
-
-**Option B — GitHub Actions**
-
-```yaml
-name: cron
-on:
-  schedule:
-    - cron: "0 0 1 * *"   # 01:00 Africa/Casablanca (UTC+1)
-    - cron: "0 8 * * *"   # 09:00 Africa/Casablanca (UTC+1)
-jobs:
-  call:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          curl -fsS -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://<domaine>/api/cron/monthly-invoices
+```json
+{
+  "crons": [
+    { "path": "/api/cron/monthly-invoices", "schedule": "0 0 1 * *" },
+    { "path": "/api/cron/payment-reminders", "schedule": "0 8 * * *" }
+  ]
+}
 ```
 
-**Option C — serveur / crontab**
+Les horaires sont en **UTC** : `00:00 UTC` = `01:00` au Maroc (UTC+1), `08:00 UTC` = `09:00`.
+
+Vercel envoie automatiquement `Authorization: Bearer <CRON_SECRET>` si la variable `CRON_SECRET` est définie sur le projet. Les routes acceptent **GET** (Vercel Cron) et **POST** (test / cron externe).
+
+> Plan Hobby : maximum 2 cron jobs et une exécution par jour. Les planifications ci-dessus sont compatibles.
+
+### 6.2 Alternative — cron externe
+
+Si tu préfères un cron externe, appelle les routes en **POST** avec le header `Authorization: Bearer <CRON_SECRET>`.
+
+**cron-job.org** : deux jobs, méthode POST, header `Authorization: Bearer <CRON_SECRET>`, fuseau `Africa/Casablanca`, planification `0 1 1 * *` et `0 9 * * *`.
+
+**crontab** :
 
 ```cron
 0 1 1 * * curl -fsS -X POST -H "Authorization: Bearer <CRON_SECRET>" https://<domaine>/api/cron/monthly-invoices
@@ -222,7 +215,7 @@ jobs:
 curl.exe -i -X POST -H "Authorization: Bearer <CRON_SECRET>" https://<domaine>/api/cron/monthly-invoices
 ```
 
-Attendu : `200` avec un résumé JSON. `401` = mauvais secret. `405` = requête GET au lieu de POST.
+Attendu : `200` avec un résumé JSON (`{"ok":true,"generated":0,...}` tant qu'il n'y a pas d'élève). `401` = mauvais secret.
 
 ---
 
