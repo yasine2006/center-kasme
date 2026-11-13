@@ -44,9 +44,12 @@ export function addMonthsClamped(date: Date, n: number) {
   return new Date(Date.UTC(year, month, Math.min(day, lastDay)));
 }
 
-/** The student's billing anchor: the date of their very first enrollment. */
-export const billingAnchor = <T extends { startedAt: Date }>(enrollments: T[]) =>
-  enrollments.reduce<Date | null>((min, e) => (min === null || e.startedAt < min ? e.startedAt : min), null);
+/** The student's billing anchor: the date (midnight UTC) of their very first enrollment. */
+export const billingAnchor = <T extends { startedAt: Date }>(enrollments: T[]) => {
+  const min = enrollments.reduce<Date | null>((m, e) => (m === null || e.startedAt < m ? e.startedAt : m), null);
+  if (!min) return null;
+  return new Date(Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), min.getUTCDate()));
+};
 
 /** Cycle number `index` for a student anchored on `anchor` (index 0 = first cycle). */
 export function cycleAt(anchor: Date, index: number): BillingCycle {
