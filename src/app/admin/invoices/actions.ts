@@ -16,8 +16,9 @@ import {
   monthKey,
   parseMonthKey,
 } from "@/lib/invoicing";
-import { formatDH } from "@/lib/format";
+import { formatDH, formatPeriod } from "@/lib/format";
 import { requireRole } from "@/lib/session";
+import { REMINDER_TITLE } from "@/lib/reminders";
 
 const schema = z.object({
   amount: z.coerce.number().positive("Montant invalide"),
@@ -89,16 +90,36 @@ export async function recordPayment(invoiceId: number, _: PayState, formData: Fo
   }
 
   const { invoice, payment, label } = result;
+  const totals = invoiceTotals(invoice);
 
   // in-app notification for the student, if their account is linked
   if (invoice.student.userId) {
-    await db.notification.create({
-      data: {
-        userId: invoice.student.userId,
-        title: "Paiement reçu",
-        body: `Un paiement de ${formatDH(parsed.data.amount)}${label ? ` (${label})` : ""} a été enregistré.`,
-      },
+    const newRemaining = Math.max(0, totals.remaining - parsed.data.amount);
+    const fullyPaid = newRemaining <= 0.005;
+
+    // Remove any stale unread reminder notifications for this student
+    // (the invoice is now paid or partially paid — avoid confusion).
+    await db.notification.deleteMany({
+      where: { userId: invoice.student.userId, title: REMINDER_TITLE, readAt: null },
     });
+
+    if (fullyPaid) {
+      await db.notification.create({
+        data: {
+          userId: invoice.student.userId,
+          title: "Mois réglé",
+          body: `Votre facture de la période ${formatPeriod(invoice.periodStart, invoice.periodEnd)} est entièrement payée. Merci !`,
+        },
+      });
+    } else {
+      await db.notification.create({
+        data: {
+          userId: invoice.student.userId,
+          title: "Paiement reçu",
+          body: `Un paiement de ${formatDH(parsed.data.amount)}${label ? ` (${label})` : ""} a été enregistré. Reste à payer : ${formatDH(newRemaining)}.`,
+        },
+      });
+    }
   }
 
   await audit(session, "PAYMENT", "Payment", payment.id, { invoiceId, lineId, amount: parsed.data.amount, method: parsed.data.method });
