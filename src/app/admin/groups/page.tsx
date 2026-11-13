@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { kindMeta } from "@/lib/fees";
@@ -89,13 +89,18 @@ export default async function GroupsPage() {
                       </form>
                     </td>
                     <td className={`${td} text-right`}>
-                      {g._count.enrollments === 0 && (
-                        <form action={deleteGroup.bind(null, g.id)}>
-                          <ConfirmButton label="Supprimer" message={`Supprimer le groupe ${g.name} ?`} className="rounded-md bg-rose-50 p-1.5 text-rose-500 hover:bg-rose-100">
-                            <Trash2 size={15} />
-                          </ConfirmButton>
-                        </form>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/admin/groups/${g.id}/edit`} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-brand-600" title="Modifier">
+                          <Pencil size={15} />
+                        </Link>
+                        {g._count.enrollments === 0 && (
+                          <form action={deleteGroup.bind(null, g.id)}>
+                            <ConfirmButton label="Supprimer" message={`Supprimer le groupe ${g.name} ?`} className="rounded-md bg-rose-50 p-1.5 text-rose-500 hover:bg-rose-100">
+                              <Trash2 size={15} />
+                            </ConfirmButton>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

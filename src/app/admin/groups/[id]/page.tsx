@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { kindMeta } from "@/lib/fees";
@@ -57,6 +57,9 @@ export default async function GroupDetailPage({ params }: { params: Promise<{ id
           <h1 className="flex items-center gap-2 text-xl font-bold">
             <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ background: group.specialty.color ?? "#94a3b8" }} />
             {group.name}
+            <Link href={`/admin/groups/${group.id}/edit`} className="ml-2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-brand-600" title="Modifier le groupe">
+              <Pencil size={16} />
+            </Link>
           </h1>
           <p className="mt-1 text-sm text-muted">
             {group.specialty.name} · {group.level.name} ·{" "}

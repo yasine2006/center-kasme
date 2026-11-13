@@ -73,6 +73,52 @@ export async function createGroup(_: GroupFormState, formData: FormData): Promis
   return { ok: true };
 }
 
+export async function updateGroup(id: number, _: GroupFormState, formData: FormData): Promise<GroupFormState> {
+  const session = await requireRole("ADMIN");
+  const parsed = schema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors };
+  const d = parsed.data;
+
+  const existing = await db.group.findFirst({ where: { id, schoolId: session.schoolId } });
+  if (!existing) return { message: "Groupe introuvable." };
+
+  if (await db.group.findFirst({ where: { schoolId: session.schoolId, name: d.name, NOT: { id } } })) {
+    return { errors: { name: ["Ce groupe existe déjà"] } };
+  }
+
+  const [specialty, level, teacher] = await Promise.all([
+    db.specialty.findFirst({ where: { id: d.specialtyId, schoolId: session.schoolId } }),
+    db.level.findFirst({ where: { id: d.levelId, schoolId: session.schoolId } }),
+    d.teacherId ? db.user.findFirst({ where: { id: Number(d.teacherId), schoolId: session.schoolId, role: "TEACHER" } }) : null,
+  ]);
+  if (!specialty || !level) return { message: "Matière ou niveau introuvable." };
+  if (d.teacherId && !teacher) return { message: "Enseignant introuvable." };
+
+  const sessions = readSessions(formData);
+
+  await db.$transaction(async (tx) => {
+    await tx.group.update({
+      where: { id },
+      data: {
+        specialtyId: specialty.id,
+        levelId: level.id,
+        teacherId: teacher?.id ?? null,
+        name: d.name,
+        kind: d.kind,
+        monthlyFee: d.monthlyFee,
+        capacity: d.capacity ? Number(d.capacity) : null,
+      },
+    });
+    await tx.session.deleteMany({ where: { groupId: id } });
+    if (sessions.length) {
+      await tx.session.createMany({ data: sessions.map((s) => ({ ...s, groupId: id })) });
+    }
+  });
+
+  await audit(session, "UPDATE", "Group", id, { name: d.name });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
 export async function deleteGroup(id: number) {
   const session = await requireRole("ADMIN");
   const group = await db.group.findFirst({ where: { id, schoolId: session.schoolId }, include: { _count: { select: { enrollments: true } } } });
