@@ -3,7 +3,11 @@ import { HeartHandshake, MonitorSmartphone, ShieldCheck } from "lucide-react";
 import { db } from "@/lib/db";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Connexion — Gestion scolaire" };
+export const metadata: Metadata = {
+  title: "Connexion — Gestion scolaire",
+  description: "Espace de gestion du centre : élèves, matières, groupes, présences et paiements en ligne.",
+  keywords: ["gestion scolaire", "centre de langues", "Khenifra", "élèves", "paiements"],
+};
 
 // The school name comes from the database: never prerender at build time
 export const dynamic = "force-dynamic";
@@ -85,9 +89,22 @@ function TechDataOverlay() {
 export default async function LoginPage() {
   const school = await db.school.findFirst({ select: { name: true, logo: true } }).catch(() => null);
   const schoolName = school?.name ?? "Gestion scolaire";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: schoolName,
+    description: "Centre de langues et de soutien scolaire.",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Khenifra",
+      addressCountry: "MA",
+    },
+  };
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2 bg-slate-50">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <main className="grid min-h-screen lg:grid-cols-2 bg-slate-50">
       {/* ── Left section: Cinematic Brand & Study Atmosphere ── */}
       <section className="relative hidden flex-col justify-between overflow-hidden bg-navy-950 p-10 xl:p-14 text-white lg:flex">
         {/* Background photo: candid students in modern study library environment */}
@@ -219,5 +236,6 @@ export default async function LoginPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }
