@@ -68,6 +68,17 @@ export default async function InvoicePage({
         }
       />
 
+      <div className="mb-4">
+        <a
+          href={`/api/invoices/${invoice.id}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          <FileText size={14} /> Télécharger la facture (PDF)
+        </a>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card className="p-5">
