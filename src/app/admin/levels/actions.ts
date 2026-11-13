@@ -28,6 +28,24 @@ export async function createLevel(_: LevelFormState, formData: FormData): Promis
   return { ok: true };
 }
 
+export async function updateLevel(id: number, _: LevelFormState, formData: FormData): Promise<LevelFormState> {
+  const session = await requireRole("ADMIN");
+  const parsed = schema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors };
+
+  const existing = await db.level.findFirst({ where: { id, schoolId: session.schoolId } });
+  if (!existing) return { message: "Niveau introuvable." };
+
+  if (await db.level.findFirst({ where: { schoolId: session.schoolId, name: parsed.data.name, NOT: { id } } })) {
+    return { errors: { name: ["Ce niveau existe déjà"] } };
+  }
+
+  await db.level.update({ where: { id }, data: { name: parsed.data.name, order: parsed.data.order } });
+  await audit(session, "UPDATE", "Level", id, { name: parsed.data.name });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
 export async function deleteLevel(id: number) {
   const session = await requireRole("ADMIN");
   const l = await db.level.findFirst({ where: { id, schoolId: session.schoolId }, include: { _count: { select: { groups: true } } } });

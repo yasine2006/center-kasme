@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { ConfirmButton } from "@/components/confirm-button";
@@ -39,13 +40,18 @@ export default async function LevelsPage() {
                     <td className={td}>{l.order}</td>
                     <td className={td}>{l._count.groups}</td>
                     <td className={`${td} text-right`}>
-                      {l._count.groups === 0 && (
-                        <form action={deleteLevel.bind(null, l.id)}>
-                          <ConfirmButton label="Supprimer" message={`Supprimer le niveau ${l.name} ?`} className="rounded-md bg-rose-50 p-1.5 text-rose-500 hover:bg-rose-100">
-                            <Trash2 size={15} />
-                          </ConfirmButton>
-                        </form>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/admin/levels/${l.id}/edit`} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-brand-600" title="Modifier">
+                          <Pencil size={15} />
+                        </Link>
+                        {l._count.groups === 0 && (
+                          <form action={deleteLevel.bind(null, l.id)}>
+                            <ConfirmButton label="Supprimer" message={`Supprimer le niveau ${l.name} ?`} className="rounded-md bg-rose-50 p-1.5 text-rose-500 hover:bg-rose-100">
+                              <Trash2 size={15} />
+                            </ConfirmButton>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

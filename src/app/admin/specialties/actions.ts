@@ -28,6 +28,24 @@ export async function createSpecialty(_: SpecialtyFormState, formData: FormData)
   return { ok: true };
 }
 
+export async function updateSpecialty(id: number, _: SpecialtyFormState, formData: FormData): Promise<SpecialtyFormState> {
+  const session = await requireRole("ADMIN");
+  const parsed = schema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { errors: z.flattenError(parsed.error).fieldErrors };
+
+  const existing = await db.specialty.findFirst({ where: { id, schoolId: session.schoolId } });
+  if (!existing) return { message: "Matière introuvable." };
+
+  if (await db.specialty.findFirst({ where: { schoolId: session.schoolId, name: parsed.data.name, NOT: { id } } })) {
+    return { errors: { name: ["Cette matière existe déjà"] } };
+  }
+
+  await db.specialty.update({ where: { id }, data: { name: parsed.data.name, color: parsed.data.color } });
+  await audit(session, "UPDATE", "Specialty", id, { name: parsed.data.name });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
 export async function deleteSpecialty(id: number) {
   const session = await requireRole("ADMIN");
   const s = await db.specialty.findFirst({ where: { id, schoolId: session.schoolId }, include: { _count: { select: { groups: true } } } });
