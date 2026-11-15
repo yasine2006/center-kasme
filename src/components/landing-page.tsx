@@ -433,28 +433,6 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
 
 
-        {/* ── STATS / CHIFFRES CLÉS ── */}
-        <section className="py-16 bg-white border-y border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { value: "5", label: "Langues enseignées", icon: "🌍" },
-                { value: "4", label: "Certifications préparées", icon: "🏆" },
-                { value: "8-12", label: "Élèves par groupe max", icon: "👥" },
-                { value: "100%", label: "Professeurs qualifiés", icon: "⭐" },
-              ].map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="text-center p-6 rounded-2xl border border-slate-200/80 bg-slate-50/50 card-lift"
-                >
-                  <div className="text-3xl mb-2">{stat.icon}</div>
-                  <div className="text-4xl font-extrabold text-navy-950">{stat.value}</div>
-                  <div className="text-xs text-slate-500 mt-1 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
               {/* Right Column: Crystal Clear High-Definition Photo Showcase */}
               <div className="lg:col-span-5 relative">
@@ -501,6 +479,29 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── STATS / CHIFFRES CLÉS ── */}
+        <section className="py-16 bg-white border-y border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { value: "5", label: "Langues enseignées", icon: "🌍" },
+                { value: "4", label: "Certifications préparées", icon: "🏆" },
+                { value: "8-12", label: "Élèves par groupe max", icon: "👥" },
+                { value: "100%", label: "Professeurs qualifiés", icon: "⭐" },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="text-center p-6 rounded-2xl border border-slate-200/80 bg-slate-50/50 card-lift"
+                >
+                  <div className="text-3xl mb-2">{stat.icon}</div>
+                  <div className="text-4xl font-extrabold text-navy-950">{stat.value}</div>
+                  <div className="text-xs text-slate-500 mt-1 font-medium">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
