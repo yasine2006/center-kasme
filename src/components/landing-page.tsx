@@ -369,6 +369,11 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           {/* Subtle background glow */}
           <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-brand-50/60 to-transparent blur-3xl opacity-60" />
 
+          {/* Floating decorative shapes */}
+          <div className="pointer-events-none absolute top-20 right-10 w-20 h-20 rounded-full bg-brand-500/10 blur-2xl animate-float" />
+          <div className="pointer-events-none absolute bottom-20 left-10 w-32 h-32 rounded-full bg-amber-400/10 blur-3xl animate-float" style={{ animationDelay: "1s" }} />
+          <div className="pointer-events-none absolute top-1/3 right-1/4 w-16 h-16 rounded-full bg-indigo-500/10 blur-2xl animate-float" style={{ animationDelay: "2s" }} />
+
           <div className="max-w-7xl mx-auto px-5 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
               {/* Left Column: Value Proposition & CTAs */}
@@ -381,7 +386,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
                 <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-navy-950 tracking-tight leading-[1.15]">
                   Développez vos langues.{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600 animate-gradient">
                     Ouvrez vos horizons vers le monde.
                   </span>
                 </h1>
@@ -398,7 +403,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                     href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20avoir%20des%20informations%20sur%20les%20inscriptions%20et%20formations.`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-6 py-3.5 font-bold text-sm shadow-lg shadow-brand-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-6 py-3.5 font-bold text-sm shadow-lg shadow-brand-500/25 transition-all duration-200 hover:-translate-y-0.5 animate-pulse-glow"
                   >
                     <MessageCircle className="h-4 w-4" />
                     <span>S&apos;inscrire via WhatsApp</span>
@@ -442,7 +447,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   <div className="absolute -inset-2 bg-gradient-to-tr from-brand-500/20 to-blue-300/30 rounded-3xl blur-xl" />
 
                   {/* Main Crisp Image */}
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 animate-float">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=95"
@@ -634,6 +639,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         <section id="certifications" className="py-24 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <Reveal>
+            <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Examens & Certifications</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -643,6 +649,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Un accompagnement méthodologique calibré pour valider le score exact dont vous avez besoin pour vos projets.
               </p>
             </div>
+            </Reveal>
             </Reveal>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -779,6 +786,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         {/* ── FORMULES & TARIFS TRANSPARENTS ── */}
         <section id="formules" className="py-24 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Formules de Cours</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -788,6 +796,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Tarifs flexibles et adaptés à vos objectifs. Contactez-nous pour connaître les tarifs exacts de votre session.
               </p>
             </div>
+            </Reveal>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
               {plans.map((p) => (
@@ -850,12 +859,14 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         {/* ── FAQ SECTION ── */}
         <section className="py-24 bg-white border-b border-slate-200/80">
           <div className="max-w-4xl mx-auto px-5 lg:px-8">
+            <Reveal>
             <div className="text-center mb-12">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Questions Fréquentes</span>
               <h2 className="text-3xl font-extrabold text-navy-950 tracking-tight mt-2">
                 Tout ce que vous devez savoir
               </h2>
             </div>
+            </Reveal>
 
             <div className="space-y-4">
               {faqs.map((faq, idx) => {
@@ -936,6 +947,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         {/* ── CONTACT & LOCATION (DYNAMIC FROM DB) ── */}
         <section id="contact" className="py-24 bg-slate-50">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <Reveal>
             <div className="text-center max-w-xl mx-auto mb-14">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Contact & Accès</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -945,6 +957,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Notre secrétariat est à votre disposition pour toute information ou pour planifier votre test de niveau.
               </p>
             </div>
+            </Reveal>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
               <a
