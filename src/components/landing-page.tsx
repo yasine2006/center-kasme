@@ -483,28 +483,6 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           </div>
         </section>
 
-        {/* ── STATS / CHIFFRES CLÉS ── */}
-        <section className="py-16 bg-white border-y border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { value: "5", label: "Langues enseignées", icon: "🌍" },
-                { value: "4", label: "Certifications préparées", icon: "🏆" },
-                { value: "8-12", label: "Élèves par groupe max", icon: "👥" },
-                { value: "100%", label: "Professeurs qualifiés", icon: "⭐" },
-              ].map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="text-center p-6 rounded-2xl border border-slate-200/80 bg-slate-50/50 card-lift"
-                >
-                  <div className="text-3xl mb-2">{stat.icon}</div>
-                  <div className="text-4xl font-extrabold text-navy-950">{stat.value}</div>
-                  <div className="text-xs text-slate-500 mt-1 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ── BENTO HIGHLIGHTS: CORE ADVANTAGES ── */}
         <section className="py-20 bg-slate-50 border-b border-slate-200/80">
@@ -929,7 +907,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 { name: "Amina B.", role: "Étudiante IELTS", text: "Grâce à The Elite Centre, j'ai obtenu un score de 7.5 à l'IELTS. Les professeurs sont très compétents et le suivi personnalisé fait toute la différence.", rating: 5 },
                 { name: "Youssef M.", role: "Étudiant Allemand", text: "J'ai appris l'allemand de A1 à B2 en moins d'un an. Les cours sont interactifs et les professeurs très patients. Je recommande vivement !", rating: 5 },
                 { name: "Fatima Z.", role: "Parent d'élève", text: "Mon fils a fait d'énormes progrès en anglais. L'ambiance est excellente et les enseignants sont très à l'écoute. Merci à toute l'équipe !", rating: 5 },
-              ].map((t, i) => (
+              ].map((t) => (
                 <div
                   key={t.name}
                   className="bg-slate-50 rounded-2xl p-7 border border-slate-200/80 card-lift"
