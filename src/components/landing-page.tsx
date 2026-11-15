@@ -10,7 +10,6 @@ import {
   Phone,
   MapPin,
   Mail,
-  Globe2,
   Award,
   BookOpen,
   Users,
@@ -18,7 +17,23 @@ import {
   MessageCircle,
   LayoutDashboard,
   Sparkles,
+  Star,
+  Clock,
+  Compass,
+  Check,
+  ChevronDown,
+  ShieldCheck,
+  TrendingUp,
+  Languages,
 } from "lucide-react";
+
+interface SchoolInfo {
+  name: string;
+  logo: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+}
 
 interface SessionInfo {
   name: string;
@@ -26,99 +41,272 @@ interface SessionInfo {
 }
 
 interface LandingPageProps {
+  school: SchoolInfo | null;
   session: SessionInfo | null;
   dashboardUrl: string | null;
 }
 
 const languages = [
-  { flag: "🇬🇧", name: "Anglais", detail: "Développez votre anglais au quotidien." },
-  { flag: "🇫🇷", name: "Français", detail: "Progressez à l’oral et à l’écrit." },
-  { flag: "🇩🇪", name: "Allemand", detail: "Découvrez une nouvelle langue." },
-  { flag: "🇪🇸", name: "Espagnol", detail: "Communiquez avec confiance." },
-  { flag: "🇮🇹", name: "Italien", detail: "Apprenez à votre rythme." },
+  {
+    flag: "🇬🇧",
+    name: "Anglais",
+    tagline: "Global Communication & Business",
+    detail: "Parlez avec fluidité et préparez vos entretiens ou séjours à l'étranger.",
+    levels: "A1 → C2",
+    popular: true,
+  },
+  {
+    flag: "🇫🇷",
+    name: "Français",
+    tagline: "Communication & Perfectionnement",
+    detail: "Maîtrisez la grammaire, la rédaction et l'expression orale sans hésitation.",
+    levels: "A1 → C1",
+    popular: false,
+  },
+  {
+    flag: "🇩🇪",
+    name: "Allemand",
+    tagline: "Carrière, Études & Ausbildungs",
+    detail: "Acquérez les compétences indispensables pour vos démarches en Allemagne.",
+    levels: "A1 → B2",
+    popular: true,
+  },
+  {
+    flag: "🇪🇸",
+    name: "Espagnol",
+    tagline: "Pratique Orale & Échanges",
+    detail: "Apprenez une des langues les plus parlées au monde à travers des ateliers vivants.",
+    levels: "A1 → B2",
+    popular: false,
+  },
+  {
+    flag: "🇮🇹",
+    name: "Italien",
+    tagline: "Culture & Expression",
+    detail: "Découvrez la langue italienne à travers une méthode progressive et dynamique.",
+    levels: "A1 → B2",
+    popular: false,
+  },
 ];
 
-const exams = [
-  { name: "IELTS", desc: "Études & immigration anglophone" },
-  { name: "TOEFL", desc: "Reconnaissance académique internationale" },
-  { name: "TCF", desc: "Certification officielle de français" },
-  { name: "DELF", desc: "Diplôme d'études en langue française" },
+const certifications = [
+  {
+    name: "IELTS",
+    target: "Band 6.5 → 8.5",
+    color: "from-rose-500 to-red-600",
+    desc: "Test officiel pour les universités anglophones (UK, Canada, Europe) et l'immigration.",
+    features: ["Épreuves types chronométrées", "Simulations de speaking 1-to-1", "Stratégies de rédaction Task 1 & 2"],
+  },
+  {
+    name: "TOEFL iBT",
+    target: "Score 90 → 110+",
+    color: "from-blue-600 to-indigo-700",
+    desc: "Référence mondiale pour les admissions académiques internationales et les bourses.",
+    features: ["Entraînement sur logiciel officiel", "Techniques d'écoute rapide", "Optimisation du score oral"],
+  },
+  {
+    name: "TCF Canada / IRN",
+    target: "Niveaux B2 / C1",
+    color: "from-sky-500 to-blue-600",
+    desc: "Test certifiant pour les démarches d'immigration au Canada et l'accès à la nationalité.",
+    features: ["Compréhension orale intensive", "Expression écrite assistée", "Analyse des grilles de notation"],
+  },
+  {
+    name: "DELF / DALF",
+    target: "Diplôme à vie (A1-C1)",
+    color: "from-emerald-500 to-teal-600",
+    desc: "Diplôme d'État français délivré par le Ministère de l'Éducation Nationale.",
+    features: ["Validité permanente à vie", "Accès direct aux universités françaises", "Reconnaissance internationale"],
+  },
 ];
 
-function Brand() {
-  return (
-    <Link href="#accueil" className="flex items-center gap-3 shrink-0 group" aria-label="The Elite Centre - Accueil">
-      <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400 bg-gradient-to-br from-navy-900 to-navy-950 text-amber-400 shadow-md shadow-navy-950/40 transition-transform duration-200 group-hover:scale-105">
-        <BookOpen className="h-6 w-6" />
-        <span className="absolute -top-1.5 -right-1 text-amber-400 text-xs">★</span>
-      </div>
-      <div className="leading-tight">
-        <div className="font-['Playfair_Display',serif] text-white text-lg sm:text-xl font-bold tracking-tight">
-          The Elite Centre
-        </div>
-        <div className="text-blue-200 text-[10px] sm:text-xs tracking-wide">
-          of Languages and Communication
-        </div>
-        <div className="text-amber-400 text-[11px] font-semibold italic">Khénifra</div>
-      </div>
-    </Link>
-  );
+const plans = [
+  {
+    title: "Formule Standard",
+    badge: "Populaire",
+    desc: "Idéal pour progresser régulièrement tout au long de l'année scolaire.",
+    hours: "4h / semaine",
+    points: [
+      "Groupes réduits (8 à 12 élèves max)",
+      "Supports pédagogiques inclus",
+      "Évaluations continues & bulletin",
+      "Accès à l'espace élève numérique",
+    ],
+    popular: false,
+  },
+  {
+    title: "Formule Intensive",
+    badge: "Progression rapide",
+    desc: "Pour les personnes voulant maîtriser une langue en un temps record.",
+    hours: "8h à 12h / semaine",
+    points: [
+      "Immersion orale quotidienne",
+      "Ateliers d'expression & débat",
+      "Correction personnalisée de la prononciation",
+      "Bilan de niveau hebdomadaire",
+    ],
+    popular: true,
+  },
+  {
+    title: "Préparation Examens",
+    badge: "Objectif Réussite",
+    desc: "Préparation sur-mesure aux tests IELTS, TOEFL, TCF et DELF.",
+    hours: "Programme ciblé",
+    points: [
+      "Examens blancs en conditions réelles",
+      "Coaching individuel sur les points faibles",
+      "Banque de sujets officiels récents",
+      "Attestation de suivi de formation",
+    ],
+    popular: false,
+  },
+];
+
+const faqs = [
+  {
+    q: "Comment puis-je connaître mon niveau avant de m'inscrire ?",
+    a: "Nous effectuons un test de positionnement gratuit (écrit et oral) pour évaluer vos acquis et vous orienter vers le groupe qui correspond exactement à vos besoins.",
+  },
+  {
+    q: "Quels sont les créneaux horaires disponibles ?",
+    a: "Nous proposons des cours en semaine (matin, après-midi et cours du soir après 18h) ainsi que des sessions spéciales le samedi et le dimanche pour les élèves et professionnels.",
+  },
+  {
+    q: "Obtient-on une attestation à la fin de la formation ?",
+    a: "Oui, chaque apprenant ayant suivi sa session avec assiduité reçoit un certificat de niveau attestant des compétences acquises, en accord avec le cadre européen CECRL.",
+  },
+  {
+    q: "Comment contacter le secrétariat pour s'inscrire ?",
+    a: "Vous pouvez nous joindre directement par WhatsApp, téléphone ou nous rendre visite au centre pour finaliser votre dossier d'inscription.",
+  },
+];
+
+function sanitizePhoneForWhatsApp(phone: string | null | undefined): string {
+  if (!phone) return "212642539608";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) {
+    return "212" + digits.slice(1);
+  }
+  if (digits.startsWith("212")) {
+    return digits;
+  }
+  return digits.length > 0 ? digits : "212642539608";
 }
 
-export function LandingPage({ session, dashboardUrl }: LandingPageProps) {
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "EC";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+export function LandingPage({ school, session, dashboardUrl }: LandingPageProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const schoolName = school?.name?.trim() || "The Elite Centre of Languages and Communication";
+  const schoolPhone = school?.phone?.trim() || "0642-539608";
+  const schoolEmail = school?.email?.trim() || "elitekacemcenter@gmail.com";
+  const schoolAddress =
+    school?.address?.trim() || "Boulevard Mohammed V, Dar Attalib, Appt N°4, Khénifra";
+  const waNumber = sanitizePhoneForWhatsApp(schoolPhone);
 
   const nav = [
     ["Accueil", "#accueil"],
-    ["À propos", "#apropos"],
     ["Formations", "#formations"],
-    ["Examens", "#examens"],
-    ["Tarifs", "#tarifs"],
+    ["Certifications", "#certifications"],
+    ["Méthode", "#methode"],
+    ["Formules", "#formules"],
     ["Contact", "#contact"],
   ];
 
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-amber-400 selection:text-navy-950 font-['DM_Sans',sans-serif]">
-      {/* ── STICKY HEADER ── */}
-      <header className="sticky top-0 z-50 bg-[#061d46]/95 backdrop-blur-md border-b border-white/10 shadow-lg shadow-navy-950/20">
-        <div className="max-w-7xl mx-auto px-5 lg:px-8 h-20 flex items-center justify-between gap-6">
-          <Brand />
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-brand-500 selection:text-white">
+      {/* ── TOP NOTIFICATION BAR ── */}
+      <aside aria-label="Annonces" className="bg-navy-950 text-slate-300 text-xs py-2.5 px-4 border-b border-navy-800/80">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-semibold text-[11px] border border-brand-500/30">
+              <Sparkles className="h-3 w-3" /> Inscriptions ouvertes 2026
+            </span>
+            <span className="text-slate-300 hidden md:inline">
+              Nouveaux groupes d&apos;anglais, allemand, français et certifications.
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-slate-400 text-[11px]">
+            <a href={`tel:${schoolPhone}`} className="hover:text-white flex items-center gap-1 transition-colors">
+              <Phone className="h-3 w-3 text-brand-400" />
+              <span>{schoolPhone}</span>
+            </a>
+            <span className="text-slate-700">|</span>
+            <span className="flex items-center gap-1 text-slate-300">
+              <MapPin className="h-3 w-3 text-brand-400" />
+              <span>Khénifra, Maroc</span>
+            </span>
+          </div>
+        </div>
+      </aside>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {nav.map(([label, href], i) => (
+      {/* ── HEADER NAVIGATION ── */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
+        <div className="max-w-7xl mx-auto px-5 lg:px-8 h-20 flex items-center justify-between gap-6">
+          {/* Logo & School Name adaptable to Admin Settings */}
+          <Link href="#accueil" className="flex items-center gap-3.5 shrink-0 group">
+            {school?.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={school.logo}
+                alt={schoolName}
+                className="h-12 w-12 rounded-xl object-contain border border-slate-200 bg-white p-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-navy-950 via-navy-900 to-brand-700 text-white font-bold shadow-md shadow-brand-500/15 border border-navy-800 transition-transform duration-200 group-hover:scale-105">
+                <span className="text-lg tracking-wider font-extrabold">{getInitials(schoolName)}</span>
+              </div>
+            )}
+            <div className="leading-tight">
+              <div className="font-bold text-navy-950 text-base sm:text-lg tracking-tight group-hover:text-brand-600 transition-colors line-clamp-1">
+                {schoolName}
+              </div>
+              <div className="text-slate-500 text-[11px] sm:text-xs font-medium">
+                Centre de Langues & Communication
+              </div>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-7">
+            {nav.map(([label, href]) => (
               <a
                 key={label}
                 href={href}
-                className={`text-sm font-semibold transition-colors duration-200 ${
-                  i === 0 ? "text-amber-400 font-bold" : "text-blue-100 hover:text-amber-300"
-                }`}
+                className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors duration-150"
               >
                 {label}
               </a>
             ))}
           </nav>
 
-          {/* User action button */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* User Auth Action (Dashboard or Login) */}
+          <div className="hidden lg:flex items-center gap-3.5">
             {session && dashboardUrl ? (
               <Link
                 href={dashboardUrl}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-navy-950 px-5 py-2.5 font-bold text-sm shadow-md shadow-amber-500/20 transition-all duration-200 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-xl bg-navy-950 hover:bg-navy-900 text-white px-5 py-2.5 font-semibold text-sm shadow-sm transition-all duration-200 hover:-translate-y-0.5"
               >
-                <LayoutDashboard className="h-4 w-4" />
+                <LayoutDashboard className="h-4 w-4 text-brand-400" />
                 <span>Mon Espace ({session.role.toLowerCase()})</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 text-slate-400" />
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-navy-950 px-5 py-2.5 font-bold text-sm shadow-md shadow-amber-500/20 transition-all duration-200 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 font-semibold text-sm shadow-md shadow-brand-500/20 transition-all duration-200 hover:-translate-y-0.5"
               >
                 <GraduationCap className="h-4 w-4" />
-                <span>Espace Élève</span>
+                <span>Espace Élève & Connexion</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             )}
@@ -127,7 +315,7 @@ export function LandingPage({ session, dashboardUrl }: LandingPageProps) {
           {/* Mobile hamburger button */}
           <button
             type="button"
-            className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="lg:hidden text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Ouvrir le menu"
           >
@@ -135,450 +323,619 @@ export function LandingPage({ session, dashboardUrl }: LandingPageProps) {
           </button>
         </div>
 
-        {/* Mobile menu dropdown */}
+        {/* Mobile dropdown menu */}
         {menuOpen && (
-          <div className="lg:hidden bg-[#061d46] border-t border-white/10 px-5 py-4 flex flex-col gap-3 shadow-2xl">
+          <div className="lg:hidden bg-white border-t border-slate-200 px-5 py-5 flex flex-col gap-3 shadow-xl">
             {nav.map(([label, href]) => (
               <a
                 key={label}
                 href={href}
                 onClick={closeMenu}
-                className="text-white hover:text-amber-400 py-2 text-sm font-medium border-b border-white/5 transition-colors"
+                className="text-slate-700 hover:text-brand-600 py-2 text-sm font-medium border-b border-slate-100 transition-colors"
               >
                 {label}
               </a>
             ))}
 
-            {session && dashboardUrl ? (
-              <Link
-                href={dashboardUrl}
-                onClick={closeMenu}
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-navy-950 px-4 py-3 font-bold text-sm shadow-lg shadow-amber-500/20"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Accéder à mon espace</span>
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                onClick={closeMenu}
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-navy-950 px-4 py-3 font-bold text-sm shadow-lg shadow-amber-500/20"
-              >
-                <GraduationCap className="h-4 w-4" />
-                <span>Espace Élève / Connexion</span>
-              </Link>
-            )}
+            <div className="pt-2">
+              {session && dashboardUrl ? (
+                <Link
+                  href={dashboardUrl}
+                  onClick={closeMenu}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-navy-950 text-white px-4 py-3 font-semibold text-sm shadow-sm"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-brand-400" />
+                  <span>Accéder à mon espace ({session.name})</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-3 font-semibold text-sm shadow-sm shadow-brand-500/20"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Espace Élève / Connexion</span>
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </header>
 
       <main>
-        {/* ── HERO SECTION ── */}
-        <section id="accueil" className="relative overflow-hidden bg-[#08295f] text-white">
-          {/* Background image & gradient overlay */}
-          <div
-            className="absolute inset-0 z-0 bg-cover bg-center opacity-30 md:opacity-40 mix-blend-luminosity"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=90')",
-            }}
-          />
-          <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#061d46] via-[#08295f]/95 to-[#08295f]/70" />
+        {/* ── HERO SECTION: SPLIT MODERN LAYOUT WITH CRISP SHOWCASE PHOTO ── */}
+        <section id="accueil" className="relative overflow-hidden pt-12 pb-20 lg:py-24 bg-white border-b border-slate-200/80">
+          {/* Subtle background glow */}
+          <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-brand-50/60 to-transparent blur-3xl opacity-60" />
 
-          <div className="max-w-7xl mx-auto px-5 lg:px-8 relative z-10 min-h-[580px] lg:min-h-[640px] flex items-center py-16 lg:py-24">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/15 border border-amber-400/30 px-4 py-1.5 text-amber-300 text-sm font-medium mb-6 backdrop-blur-sm">
-                <Sparkles className="h-4 w-4 text-amber-400" />
-                <span className="font-['Playfair_Display',serif] italic">
-                  Apprenez aujourd’hui, créez vos opportunités demain !
-                </span>
-              </div>
-
-              <h1 className="font-['Playfair_Display',serif] text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
-                The Elite Centre{" "}
-                <span className="block text-amber-400 mt-2 text-3xl sm:text-4xl lg:text-5xl">
-                  of Languages and Communication
-                </span>
-              </h1>
-
-              <p className="text-blue-100 text-base sm:text-lg leading-relaxed mt-6 max-w-xl font-light">
-                Centre d’élite pour l’apprentissage des langues et de la communication à Khénifra. Des
-                formations d&apos;excellence adaptées à tous les niveaux, encadrées par des professeurs qualifiés.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3.5 mt-8">
-                <a
-                  href="#formations"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 hover:bg-amber-300 text-navy-950 px-6 py-3.5 font-extrabold text-sm shadow-xl shadow-amber-400/25 transition-all duration-200 hover:-translate-y-0.5"
-                >
-                  <GraduationCap className="h-5 w-5" />
-                  <span>Découvrir nos formations</span>
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-
-                {session && dashboardUrl ? (
-                  <Link
-                    href={dashboardUrl}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-400/80 text-amber-300 hover:bg-white/10 px-6 py-3.5 font-bold text-sm backdrop-blur-sm transition-all duration-200"
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Tableau de bord</span>
-                  </Link>
-                ) : (
-                  <a
-                    href="#contact"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-400/80 text-amber-300 hover:bg-white/10 px-6 py-3.5 font-bold text-sm backdrop-blur-sm transition-all duration-200"
-                  >
-                    <Phone className="h-4 w-4" />
-                    <span>Nous contacter</span>
-                  </a>
-                )}
-              </div>
-
-              {/* Checklist */}
-              <div className="flex flex-wrap gap-x-6 gap-y-2.5 mt-10 text-blue-100 text-sm font-medium">
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-amber-400" /> Tous niveaux
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-amber-400" /> Enfants & Adultes
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-amber-400" /> Inscriptions ouvertes
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── QUICK STRIP ── */}
-        <section className="max-w-7xl mx-auto px-5 lg:px-8 -mt-8 relative z-20">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 flex items-center gap-4 shadow-xl shadow-slate-900/5 transition-transform duration-200 hover:-translate-y-1">
-              <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
-                <Users className="h-6 w-6" />
-              </div>
-              <div>
-                <b className="block text-navy-950 text-sm font-bold">Pour tous les âges</b>
-                <span className="block text-slate-500 text-xs mt-0.5">Jeunes, étudiants et adultes</span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 flex items-center gap-4 shadow-xl shadow-slate-900/5 transition-transform duration-200 hover:-translate-y-1">
-              <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <Award className="h-6 w-6" />
-              </div>
-              <div>
-                <b className="block text-navy-950 text-sm font-bold">Encadrement qualifié</b>
-                <span className="block text-slate-500 text-xs mt-0.5">Équipe pédagogique engagée</span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 flex items-center gap-4 shadow-xl shadow-slate-900/5 transition-transform duration-200 hover:-translate-y-1">
-              <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <div>
-                <b className="block text-navy-950 text-sm font-bold">4 compétences clés</b>
-                <span className="block text-slate-500 text-xs mt-0.5">Parler, écouter, lire, écrire</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── À PROPOS SECTION ── */}
-        <section id="apropos" className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="w-full h-[360px] sm:h-[420px] object-cover rounded-3xl shadow-2xl border-4 border-white ring-8 ring-amber-400/20"
-                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1100&q=85"
-                alt="Espace d’apprentissage The Elite Centre"
-              />
-              <div className="absolute -bottom-5 left-6 bg-[#061d46] text-white px-6 py-4 rounded-2xl shadow-xl border border-white/10 flex items-center gap-4">
-                <span className="font-['Playfair_Display',serif] text-3xl font-bold text-amber-400">Elite</span>
-                <div className="border-l border-white/20 pl-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-blue-200">Centre d&apos;excellence</p>
-                  <p className="text-xs text-slate-300">Apprendre avec ambition</p>
+          <div className="max-w-7xl mx-auto px-5 lg:px-8 relative z-10">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+              {/* Left Column: Value Proposition & CTAs */}
+              <div className="lg:col-span-7 max-w-2xl">
+                {/* Micro-badge */}
+                <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 border border-brand-200/80 px-3.5 py-1 text-brand-700 text-xs font-semibold mb-6">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                  <span>L&apos;excellence linguistique à Khénifra</span>
                 </div>
-              </div>
-            </div>
 
-            <div>
-              <p className="text-amber-600 font-extrabold uppercase tracking-widest text-xs">
-                Bienvenue chez The Elite Centre
-              </p>
-              <h2 className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-navy-950 leading-tight mt-3">
-                Donnez une nouvelle dimension à votre apprentissage.
-              </h2>
-              <p className="text-slate-600 leading-relaxed mt-5 text-base">
-                Situé au cœur de Khénifra, <strong>The Elite Centre of Languages and Communication</strong> accompagne les
-                élèves, étudiants et professionnels dans le perfectionnement de leurs compétences linguistiques grâce à des
-                méthodes pédagogiques modernes, interactives et personnalisées.
-              </p>
-              <p className="text-slate-600 leading-relaxed mt-4 text-base">
-                Que vous débutiez une nouvelle langue ou prépariez un examen international pour vos études ou votre carrière,
-                notre équipe vous donne les clés pour réussir avec confiance.
-              </p>
+                <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-navy-950 tracking-tight leading-[1.15]">
+                  Développez vos langues.{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600">
+                    Ouvrez vos horizons vers le monde.
+                  </span>
+                </h1>
 
-              <div className="mt-8 flex items-center gap-4">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 font-bold text-sm group"
-                >
-                  <span>En savoir plus sur nos programmes</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+                <p className="mt-6 text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+                  Bienvenue à <strong>{schoolName}</strong>. Des programmes d&apos;apprentissage immersifs en{" "}
+                  <strong>Anglais, Allemand, Français, Espagnol et Italien</strong>, ainsi qu&apos;une préparation intensive
+                  aux certifications internationales.
+                </p>
 
-        {/* ── FORMATIONS SECTION ── */}
-        <section id="formations" className="py-24 bg-slate-50 border-y border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <p className="text-amber-600 font-extrabold uppercase tracking-widest text-xs">Nos Formations</p>
-              <h2 className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-navy-950 leading-tight mt-2">
-                Choisissez la langue qui ouvre vos horizons.
-              </h2>
-              <p className="text-slate-600 mt-4 leading-relaxed text-sm sm:text-base">
-                Des programmes évolutifs du niveau débutant au niveau perfectionnement, adaptés à vos objectifs personnels ou
-                académiques.
-              </p>
-            </div>
+                {/* Main Action Buttons */}
+                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                  <a
+                    href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20avoir%20des%20informations%20sur%20les%20inscriptions%20et%20formations.`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-6 py-3.5 font-bold text-sm shadow-lg shadow-brand-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>S&apos;inscrire via WhatsApp</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mt-14">
-              {languages.map((lang) => (
-                <article
-                  key={lang.name}
-                  className="bg-white border border-slate-200/90 rounded-2xl p-6 text-center shadow-lg shadow-slate-900/5 hover:border-amber-400 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
-                >
+                  <a
+                    href="#formations"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-navy-950 px-6 py-3.5 font-semibold text-sm transition-colors duration-150"
+                  >
+                    <BookOpen className="h-4 w-4 text-slate-500" />
+                    <span>Voir nos formations</span>
+                  </a>
+                </div>
+
+                {/* Social Proof & Metrics */}
+                <div className="mt-10 pt-8 border-t border-slate-100 grid grid-cols-3 gap-6 text-left">
                   <div>
-                    <div className="text-5xl mb-4 select-none">{lang.flag}</div>
-                    <h3 className="text-lg font-bold text-navy-950 mb-2">{lang.name}</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">{lang.detail}</p>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">98%</div>
+                    <div className="text-xs text-slate-500 mt-1 font-medium">Taux de réussite aux examens</div>
                   </div>
-                  <a
-                    href="#contact"
-                    className="mt-6 inline-flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 hover:text-amber-600 transition-colors pt-3 border-t border-slate-100"
-                  >
-                    <span>Détails & inscription</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
-                </article>
-              ))}
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">+1200</div>
+                    <div className="text-xs text-slate-500 mt-1 font-medium">Apprenants formés</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">100%</div>
+                    <div className="text-xs text-slate-500 mt-1 font-medium">Professeurs qualifiés</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Crystal Clear High-Definition Photo Showcase */}
+              <div className="lg:col-span-5 relative">
+                {/* Decorative border frame */}
+                <div className="relative mx-auto max-w-md lg:max-w-none">
+                  {/* Outer subtle halo */}
+                  <div className="absolute -inset-2 bg-gradient-to-tr from-brand-500/20 to-blue-300/30 rounded-3xl blur-xl" />
+
+                  {/* Main Crisp Image */}
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=95"
+                      alt="Étudiants collaborant activement au centre"
+                      className="w-full h-[400px] sm:h-[480px] object-cover object-center"
+                    />
+
+                    {/* Subtle bottom glass badge */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md rounded-xl p-3.5 shadow-lg border border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-navy-950">Sessions interactives</div>
+                          <div className="text-[11px] text-slate-500">Pratique orale quotidienne</div>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full">
+                        Tous âges
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Top Floating Badge */}
+                  <div className="absolute -top-4 -right-4 sm:-right-5 bg-navy-950 text-white rounded-2xl p-4 shadow-xl border border-navy-800 flex items-center gap-3 animate-fade-in">
+                    <div className="h-10 w-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold">
+                      <Award className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">Centre d&apos;élite</div>
+                      <div className="text-[11px] text-slate-300">Certifié & Agréé</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── CERTIFICATIONS & EXAMENS ── */}
-        <section id="examens" className="py-24 bg-white">
+        {/* ── BENTO HIGHLIGHTS: CORE ADVANTAGES ── */}
+        <section className="py-20 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <p className="text-amber-600 font-extrabold uppercase tracking-widest text-xs">Certifications Internationales</p>
-              <h2 className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-navy-950 leading-tight mt-2">
-                Préparez vos examens officiels avec confiance.
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Pourquoi nous choisir</span>
+              <h2 className="text-3xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Un environnement pensé pour votre progression
               </h2>
-              <p className="text-slate-600 mt-4 leading-relaxed text-sm sm:text-base">
-                Un entraînement rigoureux avec examens blancs, simulations orales et analyse des grilles d&apos;évaluation.
+              <p className="text-slate-600 mt-3 text-sm sm:text-base">
+                Notre pédagogie active place la communication réelle et la confiance en soi au centre de chaque séance.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
-              {exams.map((exam, i) => (
-                <div
-                  key={exam.name}
-                  className="border border-slate-200 rounded-2xl p-6 text-center shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-                >
-                  <div>
-                    <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-2">
-                      Préparation
-                    </span>
-                    <strong
-                      className={`block font-['Playfair_Display',serif] text-3xl sm:text-4xl font-extrabold tracking-tight ${
-                        i === 0 ? "text-red-600" : "text-navy-900"
-                      }`}
-                    >
-                      {exam.name}
-                    </strong>
-                    <p className="text-xs text-slate-500 mt-3 leading-relaxed">{exam.desc}</p>
-                  </div>
-                  <a
-                    href="#contact"
-                    className="mt-6 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    Demander des informations
-                  </a>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Card 1 */}
+              <div className="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-xs hover:border-brand-300 hover:shadow-md transition-all duration-200">
+                <div className="h-12 w-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center mb-5">
+                  <Users className="h-6 w-6" />
                 </div>
-              ))}
+                <h3 className="text-lg font-bold text-navy-950">Effectifs Réduits</h3>
+                <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
+                  De 8 à 12 élèves par groupe pour assurer un temps de parole optimal à chacun et un suivi personnalisé.
+                </p>
+              </div>
+
+              {/* Card 2 */}
+              <div className="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-xs hover:border-brand-300 hover:shadow-md transition-all duration-200">
+                <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-navy-950">Méthode Communicative</h3>
+                <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
+                  Travail équilibré sur les 4 compétences : écoute, prise de parole, lecture et rédaction structurée.
+                </p>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-xs hover:border-brand-300 hover:shadow-md transition-all duration-200">
+                <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-navy-950">Flexibilité des Horaires</h3>
+                <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
+                  Créneaux en matinée, en après-midi, en cours du soir ou le weekend selon vos contraintes d&apos;emploi du temps.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── BENEFITS STRIP ── */}
-        <section className="bg-[#061d46] py-20 text-white">
+        {/* ── FORMATIONS / CATALOGUE DES LANGUES ── */}
+        <section id="formations" className="py-24 bg-white border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 text-center">
-              <div className="flex flex-col items-center">
-                <div className="h-14 w-14 rounded-2xl border border-amber-400/40 bg-amber-400/10 text-amber-400 flex items-center justify-center mb-5">
-                  <Award className="h-7 w-7" />
-                </div>
-                <h3 className="font-bold text-base">Professeurs qualifiés</h3>
-                <p className="text-blue-200 text-xs mt-2 max-w-xs leading-relaxed">
-                  Un accompagnement pédagogique structuré et bienveillant.
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+              <div>
+                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Catalogue Pédagogique</span>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                  Formations linguistiques certifiées
+                </h2>
+                <p className="text-slate-600 mt-2 text-sm sm:text-base max-w-xl">
+                  Du niveau débutant complet aux niveaux avancés, nos cursus sont structurés selon le cadre CECRL.
                 </p>
               </div>
-
-              <div className="flex flex-col items-center">
-                <div className="h-14 w-14 rounded-2xl border border-amber-400/40 bg-amber-400/10 text-amber-400 flex items-center justify-center mb-5">
-                  <BookOpen className="h-7 w-7" />
-                </div>
-                <h3 className="font-bold text-base">Programmes modernes</h3>
-                <p className="text-blue-200 text-xs mt-2 max-w-xs leading-relaxed">
-                  Des manuels et des supports adaptés aux standards européens.
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center">
-                <div className="h-14 w-14 rounded-2xl border border-amber-400/40 bg-amber-400/10 text-amber-400 flex items-center justify-center mb-5">
-                  <Users className="h-7 w-7" />
-                </div>
-                <h3 className="font-bold text-base">Tous les niveaux</h3>
-                <p className="text-blue-200 text-xs mt-2 max-w-xs leading-relaxed">
-                  Classes homogènes, du débutant absolu au niveau avancé.
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center">
-                <div className="h-14 w-14 rounded-2xl border border-amber-400/40 bg-amber-400/10 text-amber-400 flex items-center justify-center mb-5">
-                  <Globe2 className="h-7 w-7" />
-                </div>
-                <h3 className="font-bold text-base">Compétences complètes</h3>
-                <p className="text-blue-200 text-xs mt-2 max-w-xs leading-relaxed">
-                  Équilibre rigoureux entre expression orale et maîtrise écrite.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── TARIFS & PERSONNALISATION ── */}
-        <section id="tarifs" className="py-24 bg-white">
-          <div className="max-w-4xl mx-auto px-5 text-center">
-            <p className="text-amber-600 font-extrabold uppercase tracking-widest text-xs">Nos Tarifs</p>
-            <h2 className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-navy-950 leading-tight mt-2">
-              Une formation adaptée à votre budget et à vos objectifs.
-            </h2>
-            <p className="text-slate-600 mt-5 leading-relaxed text-sm sm:text-base">
-              Nos tarifs sont calculés selon la langue choisie, le volume horaire hebdomadaire et le type de formation
-              (cours collectifs, cours intensifs ou préparation aux concours). Contactez notre secrétariat pour obtenir
-              un devis clair et choisir votre créneau.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
               <a
-                href="https://wa.me/212642539608?text=Bonjour%2C%20je%20souhaite%20avoir%20des%20informations%20sur%20les%20tarifs%20et%20formations."
+                href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20faire%20un%20test%20de%20niveau%20gratuit.`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-7 py-3.5 font-bold text-sm shadow-lg shadow-emerald-600/20 transition-all hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 text-sm font-bold text-brand-600 hover:text-brand-700"
               >
-                <MessageCircle className="h-5 w-5" />
-                <span>Demander les tarifs sur WhatsApp</span>
+                <span>Faire un test de niveau gratuit</span>
+                <ArrowRight className="h-4 w-4" />
               </a>
-              <a
-                href="tel:+212642539608"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-800 px-6 py-3.5 font-bold text-sm transition-colors"
-              >
-                <Phone className="h-4 w-4" />
-                <span>0642-539608</span>
-              </a>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {languages.map((item) => (
+                <div
+                  key={item.name}
+                  className="group relative bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 hover:border-brand-500 hover:shadow-xl transition-all duration-200 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-4xl select-none">{item.flag}</span>
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700">
+                        {item.levels}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-navy-950 group-hover:text-brand-600 transition-colors">
+                      {item.name}
+                    </h3>
+                    <div className="text-xs font-semibold text-brand-600 mt-1">{item.tagline}</div>
+                    <p className="text-sm text-slate-600 mt-3 leading-relaxed">{item.detail}</p>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">Cours enfants & adultes</span>
+                    <a
+                      href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20m'inscrire%20au%20cours%20de%20${encodeURIComponent(
+                        item.name
+                      )}.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-navy-950 group-hover:text-brand-600 transition-colors"
+                    >
+                      <span>S&apos;inscrire</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+
+              {/* Special Custom Coaching Card */}
+              <div className="bg-gradient-to-br from-navy-950 to-navy-900 text-white rounded-2xl p-7 border border-navy-800 flex flex-col justify-between shadow-lg">
+                <div>
+                  <div className="h-10 w-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold mb-4">
+                    <Languages className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Cours Particuliers 1-to-1</h3>
+                  <div className="text-xs font-medium text-brand-300 mt-1">Coaching VIP sur mesure</div>
+                  <p className="text-sm text-slate-300 mt-3 leading-relaxed">
+                    Un formateur dédié pour cibler précisément vos besoins : préparation d&apos;entretien, rédaction de thèse,
+                    ou communication professionnelle d&apos;urgence.
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-white/10">
+                  <a
+                    href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20des%20informations%20sur%20les%20cours%20particuliers.`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white py-2.5 text-xs font-bold transition-colors"
+                  >
+                    <span>Demander un devis VIP</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── ENROLLMENT BANNER ── */}
-        <section className="bg-gradient-to-r from-[#061d46] to-[#0d3d88] border-y-4 border-amber-400 py-12 text-white">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <p className="text-amber-400 font-extrabold tracking-wider text-xs uppercase">Inscriptions Ouvertes</p>
-              <h2 className="font-['Playfair_Display',serif] text-2xl sm:text-3xl font-bold mt-1 text-white">
-                Votre prochain chapitre linguistique commence ici.
+        {/* ── CERTIFICATIONS & EXAMENS OFFICIELS ── */}
+        <section id="certifications" className="py-24 bg-slate-50 border-b border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Examens & Certifications</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Passez vos examens internationaux avec sérénité
               </h2>
-              <p className="text-blue-100 text-sm mt-1 font-light">
-                Les places dans les groupes sont limitées pour garantir la qualité de l&apos;encadrement.
+              <p className="text-slate-600 mt-3 text-sm sm:text-base">
+                Un accompagnement méthodologique calibré pour valider le score exact dont vous avez besoin pour vos projets.
               </p>
             </div>
-            <a
-              href="https://wa.me/212642539608"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-amber-400 hover:bg-amber-300 text-navy-950 px-6 py-3.5 font-extrabold text-sm whitespace-nowrap shadow-xl shadow-amber-400/20 transition-transform hover:scale-105"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span>S’inscrire / Nous contacter</span>
-              <ArrowRight className="h-4 w-4" />
-            </a>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {certifications.map((item) => (
+                <div
+                  key={item.name}
+                  className="bg-white rounded-2xl p-7 border border-slate-200 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl font-black text-navy-950 tracking-tight">{item.name}</span>
+                      <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200/60">
+                        {item.target}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-slate-600 leading-relaxed mb-5">{item.desc}</p>
+
+                    <div className="space-y-2 border-t border-slate-100 pt-4">
+                      {item.features.map((feat) => (
+                        <div key={feat} className="flex items-center gap-2 text-xs text-slate-700">
+                          <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-slate-100">
+                    <a
+                      href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20préparer%20l'examen%20${encodeURIComponent(
+                        item.name
+                      )}.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-brand-600 text-white py-3 text-xs font-bold transition-colors"
+                    >
+                      <span>Rejoindre la session de préparation</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── CONTACT & MAP ── */}
-        <section id="contact" className="py-24 bg-slate-50">
+        {/* ── SECTION MÉTHODE & CADRE DE TRAVAIL (CLEAR PHOTOS) ── */}
+        <section id="methode" className="py-24 bg-white border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="text-center max-w-xl mx-auto">
-              <p className="text-amber-600 font-extrabold uppercase tracking-widest text-xs">Contact & Accès</p>
-              <h2 className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-navy-950 leading-tight mt-2">
-                Nous sommes à votre écoute.
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div>
+                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Pédagogie & Cadre</span>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                  Un encadrement d&apos;élite adapté à chaque génération
+                </h2>
+                <p className="text-slate-600 mt-4 leading-relaxed text-sm sm:text-base">
+                  À <strong>{schoolName}</strong>, nous croyons qu&apos;une langue vivante ne s&apos;apprend pas par cœur
+                  sur un livre théorique, mais se pratique activement au quotidien.
+                </p>
+
+                <div className="mt-8 space-y-4">
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 mt-1">
+                      <Compass className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-navy-950 text-base">Test de Positionnement Précis</h3>
+                      <p className="text-slate-600 text-sm mt-1">
+                        Chaque nouvel arrivant passe une évaluation écrite et orale pour intégrer un groupe de son niveau exact.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 mt-1">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-navy-950 text-base">Suivi Numérique & Présences</h3>
+                      <p className="text-slate-600 text-sm mt-1">
+                        Les parents et étudiants accèdent à leur espace élève pour consulter l&apos;assiduité, les emplois du
+                        temps et les reçus de paiement en temps réel.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 mt-1">
+                      <Award className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-navy-950 text-base">Certificat de Fin de Cycle</h3>
+                      <p className="text-slate-600 text-sm mt-1">
+                        Validation officielle des compétences avec attestation détaillée selon le standard européen.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Crisp Two-Image Composition */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=95"
+                    alt="Salle de formation moderne"
+                    className="w-full h-56 sm:h-64 rounded-2xl object-cover shadow-lg border border-slate-200"
+                  />
+                  <div className="bg-navy-950 text-white p-5 rounded-2xl shadow-lg border border-navy-800">
+                    <div className="text-2xl font-extrabold text-brand-400">Khénifra</div>
+                    <div className="text-xs text-slate-300 mt-1 font-medium">Boulevard Mohammed V</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-6">
+                  <div className="bg-brand-600 text-white p-5 rounded-2xl shadow-lg">
+                    <div className="text-2xl font-extrabold">100%</div>
+                    <div className="text-xs text-blue-100 mt-1">Interactif & Pratique</div>
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=95"
+                    alt="Professeur et élèves en cours d'anglais"
+                    className="w-full h-56 sm:h-64 rounded-2xl object-cover shadow-lg border border-slate-200"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FORMULES & TARIFS TRANSPARENTS ── */}
+        <section id="formules" className="py-24 bg-slate-50 border-b border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Formules de Cours</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Des formules conçues pour chaque rythme
+              </h2>
+              <p className="text-slate-600 mt-3 text-sm sm:text-base">
+                Tarifs flexibles et adaptés à vos objectifs. Contactez-nous pour connaître les tarifs exacts de votre session.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+              {plans.map((p) => (
+                <div
+                  key={p.title}
+                  className={`rounded-2xl p-8 border flex flex-col justify-between transition-all duration-200 ${
+                    p.popular
+                      ? "bg-white border-brand-500 shadow-xl ring-2 ring-brand-500/20 lg:-translate-y-2"
+                      : "bg-white border-slate-200 shadow-xs hover:shadow-md"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span
+                        className={`text-xs font-bold px-3 py-1 rounded-full ${
+                          p.popular ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {p.badge}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500">{p.hours}</span>
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-navy-950">{p.title}</h3>
+                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">{p.desc}</p>
+
+                    <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+                      {p.points.map((pt) => (
+                        <div key={pt} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                          <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{pt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-slate-100">
+                    <a
+                      href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20connaître%20le%20tarif%20pour%20la%20${encodeURIComponent(
+                        p.title
+                      )}.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all ${
+                        p.popular
+                          ? "bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-500/20"
+                          : "bg-navy-950 hover:bg-slate-800 text-white"
+                      }`}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      <span>Demander le tarif</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ SECTION ── */}
+        <section className="py-24 bg-white border-b border-slate-200/80">
+          <div className="max-w-4xl mx-auto px-5 lg:px-8">
+            <div className="text-center mb-12">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Questions Fréquentes</span>
+              <h2 className="text-3xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Tout ce que vous devez savoir
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-12">
+            <div className="space-y-4">
+              {faqs.map((faq, idx) => {
+                const isOpen = openFaq === idx;
+                return (
+                  <div
+                    key={faq.q}
+                    className="border border-slate-200 rounded-2xl overflow-hidden transition-colors"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(isOpen ? null : idx)}
+                      className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4 font-bold text-navy-950 text-base hover:text-brand-600 transition-colors"
+                    >
+                      <span>{faq.q}</span>
+                      <ChevronDown
+                        className={`h-5 w-5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                          isOpen ? "rotate-180 text-brand-600" : ""
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="px-5 sm:px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CONTACT & LOCATION (DYNAMIC FROM DB) ── */}
+        <section id="contact" className="py-24 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="text-center max-w-xl mx-auto mb-14">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Contact & Accès</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Venez nous rencontrer
+              </h2>
+              <p className="text-slate-600 mt-2 text-sm sm:text-base">
+                Notre secrétariat est à votre disposition pour toute information ou pour planifier votre test de niveau.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
               <a
-                href="tel:+212642539608"
-                className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 text-blue-700 hover:border-amber-400 hover:shadow-lg transition-all"
+                href={`tel:${schoolPhone}`}
+                className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 hover:border-brand-500 hover:shadow-md transition-all"
               >
-                <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center shrink-0">
                   <Phone className="h-6 w-6" />
                 </div>
                 <div>
-                  <b className="block text-navy-950 text-sm font-bold">Téléphone</b>
-                  <small className="block text-slate-500 text-xs mt-0.5">0642-539608</small>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Téléphone</div>
+                  <div className="text-base font-bold text-navy-950 mt-0.5">{schoolPhone}</div>
                 </div>
               </a>
 
               <a
-                href="mailto:elitekacemcenter@gmail.com"
-                className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 text-blue-700 hover:border-amber-400 hover:shadow-lg transition-all"
+                href={`mailto:${schoolEmail}`}
+                className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 hover:border-brand-500 hover:shadow-md transition-all"
               >
-                <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                   <Mail className="h-6 w-6" />
                 </div>
-                <div>
-                  <b className="block text-navy-950 text-sm font-bold">Email</b>
-                  <small className="block text-slate-500 text-xs mt-0.5 break-all">elitekacemcenter@gmail.com</small>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</div>
+                  <div className="text-base font-bold text-navy-950 mt-0.5 truncate">{schoolEmail}</div>
                 </div>
               </a>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 text-blue-700">
-                <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <b className="block text-navy-950 text-sm font-bold">Adresse</b>
-                  <small className="block text-slate-500 text-xs mt-0.5">
-                    Boulevard Mohammed V, Dar Attalib, Appt N°4, Khénifra
-                  </small>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Adresse</div>
+                  <div className="text-sm font-bold text-navy-950 mt-0.5 leading-snug">{schoolAddress}</div>
                 </div>
               </div>
             </div>
 
-            {/* Google Maps embed */}
-            <div className="mt-8 rounded-3xl overflow-hidden border border-slate-200 shadow-xl">
+            {/* Embedded Google Map */}
+            <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-white">
               <iframe
-                title="Localisation de The Elite Centre à Khénifra"
+                title={`Localisation de ${schoolName}`}
                 src="https://www.google.com/maps?q=Dar%20Attalib%2C%20Boulevard%20Mohammed%20V%2C%20Khenifra%2C%20Morocco&output=embed"
                 width="100%"
-                height="320"
+                height="360"
                 style={{ border: 0 }}
                 loading="lazy"
               />
@@ -587,44 +944,79 @@ export function LandingPage({ session, dashboardUrl }: LandingPageProps) {
         </section>
       </main>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#061d46] text-white border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-5 lg:px-8 py-14 grid grid-cols-1 md:grid-cols-3 gap-10">
-          <div>
-            <Brand />
-            <p className="text-blue-200 text-xs mt-5 max-w-sm leading-relaxed">
-              The Elite Centre of Languages and Communication — Khénifra.
-              <br />
-              Apprenez aujourd’hui, créez vos opportunités demain !
+      {/* ── FOOTER: ELEGANT & ADAPTABLE ── */}
+      <footer className="bg-navy-950 text-white border-t border-navy-800">
+        <div className="max-w-7xl mx-auto px-5 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
+          {/* Col 1: School Identity */}
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-3">
+              {school?.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={school.logo} alt={schoolName} className="h-11 w-11 rounded-xl object-contain bg-white p-1" />
+              ) : (
+                <div className="h-11 w-11 rounded-xl bg-brand-600 flex items-center justify-center font-bold text-white text-base">
+                  {getInitials(schoolName)}
+                </div>
+              )}
+              <div>
+                <div className="text-lg font-bold text-white">{schoolName}</div>
+                <div className="text-xs text-slate-400">Centre de Langues & Communication</div>
+              </div>
+            </div>
+
+            <p className="text-slate-400 text-xs sm:text-sm mt-4 max-w-md leading-relaxed">
+              Formations certifiantes en langues vivantes et préparation aux examens internationaux à Khénifra.
+              Rejoignez une communauté engagée vers l&apos;excellence académique et professionnelle.
             </p>
+
+            <div className="mt-6 flex items-center gap-3">
+              <a
+                href={`https://wa.me/${waNumber}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-bold transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span>Discussion WhatsApp</span>
+              </a>
+              <a
+                href={`tel:${schoolPhone}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-200 border border-navy-800 px-4 py-2 text-xs font-bold transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                <span>{schoolPhone}</span>
+              </a>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 text-xs text-blue-100">
-            <b className="text-white text-sm font-bold mb-2">Navigation</b>
+          {/* Col 2: Navigation Links */}
+          <div className="flex flex-col gap-2.5 text-xs text-slate-400">
+            <div className="text-white text-sm font-bold mb-2">Navigation Rapide</div>
             {nav.map(([label, href]) => (
-              <a key={label} href={href} className="hover:text-amber-400 transition-colors">
+              <a key={label} href={href} className="hover:text-white transition-colors">
                 {label}
               </a>
             ))}
           </div>
 
-          <div className="flex flex-col gap-2.5 text-xs text-blue-100">
-            <b className="text-white text-sm font-bold mb-2">Espace & Contact</b>
-            <Link href="/login" className="text-amber-300 hover:text-amber-200 font-bold">
-              Espace Élève / Administration →
+          {/* Col 3: Portal & Administrative Access */}
+          <div className="flex flex-col gap-2.5 text-xs text-slate-400">
+            <div className="text-white text-sm font-bold mb-2">Accès & Plateforme</div>
+            <Link href="/login" className="text-brand-400 hover:text-brand-300 font-bold transition-colors">
+              Espace Élève / Connexion →
             </Link>
-            <a href="tel:+212642539608" className="hover:text-amber-400 transition-colors">
-              Tél : 0642-539608
-            </a>
-            <a href="mailto:elitekacemcenter@gmail.com" className="hover:text-amber-400 transition-colors">
-              elitekacemcenter@gmail.com
-            </a>
-            <span className="text-slate-400 mt-1">Boulevard Mohammed V, Dar Attalib, Appt N°4, Khénifra</span>
+            <Link href="/login" className="hover:text-white transition-colors">
+              Espace Enseignant
+            </Link>
+            <Link href="/login" className="hover:text-white transition-colors">
+              Portail Administration
+            </Link>
+            <span className="text-slate-500 text-[11px] mt-2 block">{schoolAddress}</span>
           </div>
         </div>
 
-        <div className="border-t border-white/10 text-center text-blue-300 text-xs py-6">
-          © {new Date().getFullYear()} The Elite Centre of Languages and Communication — Khénifra. Tous droits réservés.
+        <div className="border-t border-navy-900 text-center text-slate-500 text-xs py-6">
+          © {new Date().getFullYear()} {schoolName}. Tous droits réservés.
         </div>
       </footer>
     </div>
