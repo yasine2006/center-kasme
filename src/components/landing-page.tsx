@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Languages,
 } from "lucide-react";
+import { Reveal } from "@/components/reveal";
 
 interface SchoolInfo {
   name: string;
@@ -430,6 +431,31 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 </div>
               </div>
 
+
+
+        {/* ── STATS / CHIFFRES CLÉS ── */}
+        <section className="py-16 bg-white border-y border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { value: "5", label: "Langues enseignées", icon: "🌍" },
+                { value: "4", label: "Certifications préparées", icon: "🏆" },
+                { value: "8-12", label: "Élèves par groupe max", icon: "👥" },
+                { value: "100%", label: "Professeurs qualifiés", icon: "⭐" },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="text-center p-6 rounded-2xl border border-slate-200/80 bg-slate-50/50 card-lift"
+                >
+                  <div className="text-3xl mb-2">{stat.icon}</div>
+                  <div className="text-4xl font-extrabold text-navy-950">{stat.value}</div>
+                  <div className="text-xs text-slate-500 mt-1 font-medium">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
               {/* Right Column: Crystal Clear High-Definition Photo Showcase */}
               <div className="lg:col-span-5 relative">
                 {/* Decorative border frame */}
@@ -482,6 +508,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         {/* ── BENTO HIGHLIGHTS: CORE ADVANTAGES ── */}
         <section className="py-20 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Pourquoi nous choisir</span>
               <h2 className="text-3xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -491,6 +518,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Notre pédagogie active place la communication réelle et la confiance en soi au centre de chaque séance.
               </p>
             </div>
+            </Reveal>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card 1 */}
@@ -533,6 +561,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         <section id="formations" className="py-24 bg-white border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+              <Reveal>
               <div>
                 <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Catalogue Pédagogique</span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -542,6 +571,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   Du niveau débutant complet aux niveaux avancés, nos cursus sont structurés selon le cadre CECRL.
                 </p>
               </div>
+              </Reveal>
               <a
                 href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20faire%20un%20test%20de%20niveau%20gratuit.`}
                 target="_blank"
@@ -624,6 +654,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         {/* ── CERTIFICATIONS & EXAMENS OFFICIELS ── */}
         <section id="certifications" className="py-24 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
               <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Examens & Certifications</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
@@ -633,6 +664,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Un accompagnement méthodologique calibré pour valider le score exact dont vous avez besoin pour vos projets.
               </p>
             </div>
+            </Reveal>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {certifications.map((item) => (
@@ -874,6 +906,50 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── TÉMOIGNAGES ── */}
+        <section className="py-24 bg-white border-b border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-5 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Témoignages</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
+                Ce que disent nos apprenants
+              </h2>
+              <p className="text-slate-600 mt-3 text-sm sm:text-base">
+                La satisfaction de nos élèves est notre meilleure récompense.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { name: "Amina B.", role: "Étudiante IELTS", text: "Grâce à The Elite Centre, j'ai obtenu un score de 7.5 à l'IELTS. Les professeurs sont très compétents et le suivi personnalisé fait toute la différence.", rating: 5 },
+                { name: "Youssef M.", role: "Étudiant Allemand", text: "J'ai appris l'allemand de A1 à B2 en moins d'un an. Les cours sont interactifs et les professeurs très patients. Je recommande vivement !", rating: 5 },
+                { name: "Fatima Z.", role: "Parent d'élève", text: "Mon fils a fait d'énormes progrès en anglais. L'ambiance est excellente et les enseignants sont très à l'écoute. Merci à toute l'équipe !", rating: 5 },
+              ].map((t, i) => (
+                <div
+                  key={t.name}
+                  className="bg-slate-50 rounded-2xl p-7 border border-slate-200/80 card-lift"
+                >
+                  <div className="flex gap-1 mb-4">
+                    {Array.from({ length: t.rating }).map((_, j) => (
+                      <Star key={j} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed italic">&ldquo;{t.text}&rdquo;</p>
+                  <div className="mt-5 pt-4 border-t border-slate-200/80 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-navy-950">{t.name}</div>
+                      <div className="text-xs text-slate-500">{t.role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
