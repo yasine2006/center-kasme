@@ -450,7 +450,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 animate-float">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=95"
+                      src="/images/hero.jpg"
                       alt="Étudiants collaborant activement au centre"
                       className="w-full h-[400px] sm:h-[480px] object-cover object-center"
                     />
@@ -756,7 +756,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="space-y-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=95"
+                    src="/images/salle.jpg"
                     alt="Salle de formation moderne"
                     className="w-full h-56 sm:h-64 rounded-2xl object-cover shadow-lg border border-slate-200"
                   />
@@ -773,7 +773,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=95"
+                    src="/images/cours.jpg"
                     alt="Professeur et élèves en cours d'anglais"
                     className="w-full h-56 sm:h-64 rounded-2xl object-cover shadow-lg border border-slate-200"
                   />
