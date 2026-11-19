@@ -1023,12 +1023,21 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
             <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-white">
               <iframe
                 title={`Localisation de ${schoolName}`}
-                src="https://www.google.com/maps?q=Dar%20Attalib%2C%20Boulevard%20Mohammed%20V%2C%20Khenifra%2C%20Morocco&output=embed"
+                src="https://www.google.com/maps?q=Elite%20Center%2C%20W8QF%2BHW2%2C%20Av.%20Mohamed%20V%2C%20Kh%C3%A9nifra&output=embed"
                 width="100%"
                 height="360"
                 style={{ border: 0 }}
                 loading="lazy"
               />
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Elite%20Center%2C%20W8QF%2BHW2%2C%20Av.%20Mohamed%20V%2C%20Kh%C3%A9nifra"
+                target="_blank"
+                rel="noreferrer"
+                className="mx-5 mb-5 mt-1 inline-flex items-center gap-2 text-sm font-bold text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Obtenir l&apos;itinéraire</span>
+              </a>
             </div>
           </div>
         </section>
