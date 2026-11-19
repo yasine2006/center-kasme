@@ -15,6 +15,10 @@ const jsonLd = {
   },
   telephone: "+212642539608",
   email: "elitekacemcenter@gmail.com",
+  sameAs: [
+    "https://www.facebook.com/TheEliteCentreofLanguagesandCommunication",
+    "https://www.instagram.com/elitekacemcenter",
+  ],
 };
 
 export const metadata: Metadata = {
