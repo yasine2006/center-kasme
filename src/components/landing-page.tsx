@@ -364,126 +364,181 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
       </header>
 
       <main>
-        {/* ── HERO SECTION: SPLIT MODERN LAYOUT WITH CRISP SHOWCASE PHOTO ── */}
-        <section id="accueil" className="relative overflow-hidden pt-12 pb-20 lg:py-24 bg-white border-b border-slate-200/80">
-          {/* Subtle background glow */}
-          <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-brand-50/60 to-transparent blur-3xl opacity-60" />
+        {/* ── HERO SECTION: PREMIUM DARK SPLIT LAYOUT ── */}
+        <section id="accueil" className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-elite-blue border-b border-navy-800">
+          {/* Layered background mesh */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_60%_-10%,rgba(20,85,189,0.35),transparent)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_10%_80%,rgba(234,185,67,0.08),transparent)]" />
 
-          {/* Floating decorative shapes */}
-          <div className="pointer-events-none absolute top-20 right-10 w-20 h-20 rounded-full bg-brand-500/10 blur-2xl animate-float" />
-          <div className="pointer-events-none absolute bottom-20 left-10 w-32 h-32 rounded-full bg-amber-400/10 blur-3xl animate-float" style={{ animationDelay: "1s" }} />
-          <div className="pointer-events-none absolute top-1/3 right-1/4 w-16 h-16 rounded-full bg-indigo-500/10 blur-2xl animate-float" style={{ animationDelay: "2s" }} />
+          {/* Animated orbs */}
+          <div className="pointer-events-none absolute top-16 right-16 w-72 h-72 rounded-full bg-brand-600/10 blur-3xl animate-float" />
+          <div className="pointer-events-none absolute -bottom-10 left-8 w-56 h-56 rounded-full bg-elite-gold/5 blur-3xl animate-float" style={{ animationDelay: "1.5s" }} />
+          <div className="pointer-events-none absolute top-1/2 left-1/3 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl animate-float" style={{ animationDelay: "3s" }} />
 
-          <div className="max-w-7xl mx-auto px-5 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-              {/* Left Column: Value Proposition & CTAs */}
-              <div className="lg:col-span-7 max-w-2xl">
-                {/* Micro-badge */}
-                <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 border border-brand-200/80 px-3.5 py-1 text-brand-700 text-xs font-semibold mb-6">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+          {/* Grid texture overlay */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.8) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.8) 1px,transparent 1px)",
+              backgroundSize: "48px 48px",
+            }}
+          />
+
+          <div className="max-w-7xl mx-auto px-5 lg:px-8 py-16 lg:py-24 relative z-10">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+
+              {/* ── LEFT: Content ── */}
+              <div className="lg:col-span-7">
+
+                {/* Top badge pill */}
+                <div className="inline-flex items-center gap-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 px-4 py-1.5 text-elite-gold text-xs font-bold mb-7 animate-fade-up">
+                  <Star className="h-3.5 w-3.5 fill-elite-gold text-elite-gold" />
                   <span>L&apos;excellence linguistique à Khénifra</span>
+                  <span className="w-1 h-1 rounded-full bg-elite-gold/50" />
+                  <span className="text-white/60">Depuis 2018</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-navy-950 tracking-tight leading-[1.15]">
-                  Développez vos langues.{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600 animate-gradient">
-                    Ouvrez vos horizons vers le monde.
+                {/* Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold text-white tracking-tight leading-[1.1] animate-fade-up delay-100">
+                  Développez vos{" "}
+                  <span
+                    className="relative inline-block"
+                    style={{
+                      background: "linear-gradient(135deg, #eab943 0%, #ffd875 50%, #eab943 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
+                    langues.
                   </span>
+                  <br />
+                  <span className="text-white/85">Ouvrez vos horizons.</span>
                 </h1>
 
-                <p className="mt-6 text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-                  Bienvenue à <strong>{schoolName}</strong>. Des programmes d&apos;apprentissage immersifs en{" "}
-                  <strong>Anglais, Allemand, Français, Espagnol et Italien</strong>, ainsi qu&apos;une préparation intensive
-                  aux certifications internationales.
+                <p className="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed animate-fade-up delay-200">
+                  Bienvenue à{" "}
+                  <span className="text-white font-semibold">{schoolName}</span>. Programmes immersifs en{" "}
+                  <span className="text-elite-gold font-semibold">Anglais, Allemand, Français, Espagnol et Italien</span>,
+                  et préparation intensive aux certifications internationales.
                 </p>
 
-                {/* Main Action Buttons */}
-                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                {/* CTA Buttons */}
+                <div className="mt-9 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 animate-fade-up delay-300">
                   <a
                     href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20avoir%20des%20informations%20sur%20les%20inscriptions%20et%20formations.`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-6 py-3.5 font-bold text-sm shadow-lg shadow-brand-500/25 transition-all duration-200 hover:-translate-y-0.5 animate-pulse-glow"
+                    className="group inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-4 font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 shadow-xl"
+                    style={{
+                      background: "linear-gradient(135deg, #eab943, #f5ca5c)",
+                      color: "#08295f",
+                      boxShadow: "0 8px 24px -4px rgba(234,185,67,0.45)",
+                    }}
                   >
                     <MessageCircle className="h-4 w-4" />
                     <span>S&apos;inscrire via WhatsApp</span>
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </a>
 
                   <a
                     href="#formations"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-navy-950 px-6 py-3.5 font-semibold text-sm transition-colors duration-150"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white px-7 py-4 font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
                   >
-                    <BookOpen className="h-4 w-4 text-slate-500" />
+                    <BookOpen className="h-4 w-4 text-white/70" />
                     <span>Voir nos formations</span>
                   </a>
                 </div>
 
-                {/* Social Proof & Metrics */}
-                <div className="mt-10 pt-8 border-t border-slate-100 grid grid-cols-3 gap-6 text-left">
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">98%</div>
-                    <div className="text-xs text-slate-500 mt-1 font-medium">Taux de réussite aux examens</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">+1200</div>
-                    <div className="text-xs text-slate-500 mt-1 font-medium">Apprenants formés</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-navy-950">100%</div>
-                    <div className="text-xs text-slate-500 mt-1 font-medium">Professeurs qualifiés</div>
-                  </div>
+                {/* KPI Stats — 3 pills */}
+                <div className="mt-11 pt-8 border-t border-white/10 grid grid-cols-3 gap-5 animate-fade-up delay-400">
+                  {[
+                    { value: "98%", label: "Taux de réussite", icon: TrendingUp },
+                    { value: "+1200", label: "Apprenants formés", icon: Users },
+                    { value: "100%", label: "Profs qualifiés", icon: Award },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <div key={label} className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Icon className="h-4 w-4 text-elite-gold shrink-0" />
+                        <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{value}</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 font-medium leading-tight">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Trust logos row — language flags */}
+                <div className="mt-8 flex items-center gap-3 flex-wrap animate-fade-up delay-500">
+                  <span className="text-[11px] text-slate-500 font-medium mr-1">Langues :</span>
+                  {["🇬🇧", "🇫🇷", "🇩🇪", "🇪🇸", "🇮🇹"].map((flag) => (
+                    <span
+                      key={flag}
+                      className="text-xl select-none bg-white/8 hover:bg-white/14 rounded-lg px-2.5 py-1.5 transition-colors cursor-default border border-white/10"
+                    >
+                      {flag}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-
-
-
-              {/* Right Column: Crystal Clear High-Definition Photo Showcase */}
-              <div className="lg:col-span-5 relative">
-                {/* Decorative border frame */}
+              {/* ── RIGHT: Image card ── */}
+              <div className="lg:col-span-5 relative animate-fade-right delay-200">
                 <div className="relative mx-auto max-w-md lg:max-w-none">
-                  {/* Outer subtle halo */}
-                  <div className="absolute -inset-2 bg-gradient-to-tr from-brand-500/20 to-blue-300/30 rounded-3xl blur-xl" />
 
-                  {/* Main Crisp Image */}
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 animate-float">
+                  {/* Glow halo behind image */}
+                  <div className="absolute -inset-4 bg-gradient-to-tr from-elite-gold/20 via-brand-500/20 to-indigo-500/15 rounded-[2rem] blur-2xl" />
+
+                  {/* Image container */}
+                  <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 animate-float">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/images/hero.jpg"
                       alt="Étudiants collaborant activement au centre"
-                      className="w-full h-[400px] sm:h-[480px] object-cover object-center"
+                      className="w-full h-[400px] sm:h-[500px] object-cover object-center"
                     />
 
-                    {/* Subtle bottom glass badge */}
-                    <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md rounded-xl p-3.5 shadow-lg border border-slate-100 flex items-center justify-between">
+                    {/* Gradient overlay at bottom */}
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-navy-950/80 to-transparent" />
+
+                    {/* Bottom glass card */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 flex items-center justify-between shadow-lg">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                        <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                           <CheckCircle2 className="h-5 w-5" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-navy-950">Sessions interactives</div>
-                          <div className="text-[11px] text-slate-500">Pratique orale quotidienne</div>
+                          <div className="text-xs font-bold text-white">Sessions interactives</div>
+                          <div className="text-[11px] text-white/60">Pratique orale quotidienne</div>
                         </div>
                       </div>
-                      <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full">
+                      <span className="text-[11px] font-bold text-elite-gold bg-elite-gold/15 border border-elite-gold/30 px-2.5 py-1 rounded-full">
                         Tous âges
                       </span>
                     </div>
                   </div>
 
-                  {/* Top Floating Badge */}
-                  <div className="absolute -top-4 -right-4 sm:-right-5 bg-navy-950 text-white rounded-2xl p-4 shadow-xl border border-navy-800 flex items-center gap-3 animate-fade-in">
-                    <div className="h-10 w-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold">
-                      <Award className="h-5 w-5" />
+                  {/* Top-right floating badge */}
+                  <div className="absolute -top-5 -right-3 sm:-right-6 rounded-2xl p-3.5 shadow-2xl flex items-center gap-3 border border-elite-gold/30 animate-scale-in"
+                    style={{ background: "linear-gradient(135deg, #08295f, #0b2d6e)" }}>
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center font-bold"
+                      style={{ background: "linear-gradient(135deg, #eab943, #f5ca5c)" }}>
+                      <Award className="h-5 w-5 text-navy-950" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white">Centre d&apos;élite</div>
                       <div className="text-[11px] text-slate-300">Certifié & Agréé</div>
                     </div>
                   </div>
+
+                  {/* Left floating mini-badge */}
+                  <div className="absolute -left-5 top-1/2 -translate-y-1/2 bg-brand-600 text-white rounded-xl px-3 py-2 shadow-lg border border-brand-500/50 flex items-center gap-2 animate-fade-left delay-300">
+                    <GraduationCap className="h-4 w-4" />
+                    <span className="text-[11px] font-bold whitespace-nowrap">5 Langues</span>
+                  </div>
                 </div>
               </div>
+
             </div>
           </div>
         </section>
