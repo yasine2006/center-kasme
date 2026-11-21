@@ -1,8 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { invoiceTotals } from "@/lib/fees";
-
-const DAY = 86_400_000;
+import { lateDaysFromEnrollment } from "@/lib/late-days";
 
 export async function canForceDeleteStudent(studentId: number, schoolId: number) {
   const student = await db.student.findFirst({
@@ -24,8 +23,7 @@ export async function canForceDeleteStudent(studentId: number, schoolId: number)
     const t = invoiceTotals(invoice);
     if (t.remaining <= 0) continue;
     unpaid += t.remaining;
-    const due = invoice.dueDate.getTime();
-    const days = Math.max(0, Math.floor((now.getTime() - due) / DAY));
+    const days = lateDaysFromEnrollment(invoice.periodStart, now);
     if (days > maxDaysLate) maxDaysLate = days;
   }
 
