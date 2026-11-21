@@ -72,10 +72,24 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
   // 1. ÉLÈVES NON PAYÉS (IMPAYÉS À DATE - CUMULATIF HISTORIQUE)
   // ───────────────────────────────────────────────────────────────────────────
   if (type === "unpaid") {
-    // Cutoff date: any invoice starting on or before this date is included (e.g. 10/11 includes 05/10, 02/10, etc.)
+    // Cutoff date: any invoice starting on or before this date is included.
     const rawCutoff = sp.get("asOf") || sp.get("to");
     const cutoffDate = rawCutoff ? parseDay(rawCutoff, true) ?? now : now;
     const onlyLate = sp.get("onlyLate") === "1";
+
+    // Monthly window driven by the selected date (fully filterable):
+    //   "1"   → cycles starting in the selected month, up to the selected date (default)
+    //   "2"   → cycles starting in the selected month OR the one before, up to the selected date
+    //   "all" → cumulative history up to the selected date (legacy behaviour)
+    const months = sp.get("months") ?? "1";
+    const selectedFirst = new Date(Date.UTC(cutoffDate.getUTCFullYear(), cutoffDate.getUTCMonth(), 1));
+    const minStart =
+      months === "all"
+        ? undefined
+        : months === "2"
+          ? new Date(Date.UTC(cutoffDate.getUTCFullYear(), cutoffDate.getUTCMonth() - 1, 1))
+          : selectedFirst;
+    const lowerBound = from ?? minStart;
 
     const groupInvoiceFilter = groupId
       ? {
@@ -95,7 +109,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         },
         ...groupInvoiceFilter,
         periodStart: {
-          ...(from ? { gte: from } : {}),
+          ...(lowerBound ? { gte: lowerBound } : {}),
           lte: cutoffDate,
         },
       },
@@ -189,9 +203,16 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         ];
       });
 
+    const windowText =
+      months === "all"
+        ? "Historique cumulatif inclus"
+        : months === "2"
+          ? `2 derniers mois (depuis le ${formatDate(minStart!)})`
+          : `Mois sélectionné (depuis le ${formatDate(selectedFirst)})`;
+
     const subtitleParts = [
       `Arrêté au : ${formatDate(cutoffDate)}`,
-      from ? `Depuis le : ${formatDate(from)}` : "Historique cumulatif inclus",
+      from ? `Depuis le : ${formatDate(from)}` : windowText,
       groupName ? `Groupe : ${groupName}` : undefined,
       onlyLate ? "Uniquement factures échues" : "Toutes factures non soldées",
     ].filter(Boolean);

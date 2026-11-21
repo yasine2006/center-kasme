@@ -73,6 +73,7 @@ export function ReportBuilder({
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState("");
   const [onlyLate, setOnlyLate] = useState(false);
+  const [months, setMonths] = useState("1"); // 1 = mois sélectionné, 2 = 2 derniers mois, all = historique
   const [cols, setCols] = useState<Record<string, boolean>>({ groups: true, phone: true, status: true });
 
   const [preview, setPreview] = useState<ReportPreview>(initial);
@@ -104,6 +105,7 @@ export function ReportBuilder({
     const sp = new URLSearchParams({ type });
     if (isUnpaid) {
       if (asOf) sp.set("asOf", asOf);
+      sp.set("months", months);
       if (from) sp.set("from", from);
       if (onlyLate) sp.set("onlyLate", "1");
     } else {
@@ -116,7 +118,7 @@ export function ReportBuilder({
     if (status) sp.set("status", status);
     if (withCols) sp.set("cols", colsParam);
     return sp;
-  }, [type, isUnpaid, asOf, from, to, onlyLate, groupId, searchQuery, status, withCols, colsParam]);
+  }, [type, isUnpaid, asOf, from, to, onlyLate, months, groupId, searchQuery, status, withCols, colsParam]);
 
   const href = (format: "pdf" | "xlsx", extra?: Record<string, string>) => {
     const sp = buildParams();
@@ -224,7 +226,7 @@ export function ReportBuilder({
               <Filter size={17} className="text-brand-600" />
               <h2 className="text-sm font-bold text-navy-950 uppercase tracking-wide">Filtres Intelligents</h2>
             </div>
-            {(groupId || searchQuery || status || onlyLate || (isUnpaid ? asOf !== defaultAsOf : from || to)) && (
+            {(groupId || searchQuery || status || onlyLate || (isUnpaid ? asOf !== defaultAsOf || months !== "1" : from || to)) && (
               <button
                 type="button"
                 onClick={() => {
@@ -232,6 +234,7 @@ export function ReportBuilder({
                   setSearchQuery("");
                   setStatus("");
                   setOnlyLate(false);
+                  setMonths("1");
                   setFrom("");
                   setTo("");
                   if (defaultAsOf) setAsOf(defaultAsOf);
@@ -251,7 +254,9 @@ export function ReportBuilder({
                   <Calendar size={14} className="text-brand-600" />
                   Date de situation (Arrêté au)
                 </label>
-                <span className="text-[11px] text-muted">Historique inclus</span>
+                <span className="text-[11px] font-semibold text-brand-700">
+                  {months === "1" ? "Mois sélectionné" : months === "2" ? "2 derniers mois" : "Historique inclus"}
+                </span>
               </div>
               <input
                 type="date"
@@ -260,9 +265,55 @@ export function ReportBuilder({
                 className={`${selectCls} w-full font-medium`}
                 aria-label="Arrêté à la date"
               />
-              <p className="text-[11px] leading-relaxed text-slate-500">
-                Englobe tous les élèves inscrits avant ou à cette date avec des impayés (ex. 05/10, 02/10...), sans rien masquer.
-              </p>
+
+              {/* Plage — entièrement filtrable à partir de la date choisie */}
+              <div className="pt-1">
+                <span className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                  Plage des impayés
+                </span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setMonths("1")}
+                    className={`rounded-lg px-2 py-2 text-[11px] font-bold transition border ${
+                      months === "1"
+                        ? "bg-navy-900 text-white border-navy-900 shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    Ce mois
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMonths("2")}
+                    className={`rounded-lg px-2 py-2 text-[11px] font-bold transition border ${
+                      months === "2"
+                        ? "bg-navy-900 text-white border-navy-900 shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    2 derniers mois
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMonths("all")}
+                    className={`rounded-lg px-2 py-2 text-[11px] font-bold transition border ${
+                      months === "all"
+                        ? "bg-navy-900 text-white border-navy-900 shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    Historique
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
+                  {months === "1"
+                    ? "Uniquement les cycles entamés dans le mois de la date choisie, jusqu'à cette date."
+                    : months === "2"
+                      ? "Cycles entamés dans le mois choisi et le mois précédent, jusqu'à cette date."
+                      : "Tous les impayés cumulés jusqu'à la date choisie, sans limite d'historique."}
+                </p>
+              </div>
 
               {/* Quick shortcuts */}
               <div className="flex flex-wrap gap-1.5 pt-1">

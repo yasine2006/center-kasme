@@ -34,7 +34,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     }),
     buildDataset(
       schoolId,
-      new URLSearchParams(tab.key === "unpaid" ? { type: tab.key, asOf: defaultAsOf } : { type: tab.key }),
+      new URLSearchParams(
+        tab.key === "unpaid" ? { type: tab.key, asOf: defaultAsOf, months: "1" } : { type: tab.key },
+      ),
     ),
     tab.key === "receipts"
       ? db.payment.findMany({
