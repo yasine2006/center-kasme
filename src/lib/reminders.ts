@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { invoiceTotals } from "@/lib/fees";
 import { formatDH, formatPeriod } from "@/lib/format";
 import { billingAnchor, cycleForMonth, enrollmentsBillableFor, monthKey, monthStart } from "@/lib/invoicing";
+import { enrollmentAnchor, lateDaysFromEnrollment } from "@/lib/late-days";
 
 export const REMINDER_TITLE = "Rappel de paiement";
 
@@ -29,7 +30,6 @@ export type ReminderRow = {
   waHref: string | null;
 };
 
-const DAY = 86_400_000;
 const startOfDay = (d = new Date()) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 
 function normalizePhone(raw: string | null) {
@@ -123,11 +123,9 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
         : paid > 0
           ? "PARTIAL"
           : "UNPAID";
-    // Never before cycle start + 5 days (guards against a corrupted/legacy dueDate).
-    const baseDue = invoice?.dueDate ?? cycle.dueDate;
-    const dueFloor = new Date((invoice?.periodStart ?? cycle.start).getTime() + 5 * DAY);
-    const dueDate = baseDue.getTime() > dueFloor.getTime() ? baseDue : dueFloor;
-    const daysLate = remaining > 0 ? Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY)) : 0;
+    // Échéance = inscription + 5 j ; retard = jours depuis l'inscription à partir du 6e jour.
+    const start = enrollmentAnchor(s.enrollments) ?? cycle.start;
+    const daysLate = remaining > 0 ? lateDaysFromEnrollment(start, now) : 0;
     const remindedAt = invoice ? (lastReminder.get(invoice.id) ?? null) : null;
     const phone = normalizePhone(s.parentPhone);
 
@@ -231,9 +229,7 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
       if (totals.remaining <= 0) return null;
       if (!invoice.student.userId) return null;
       if (today.has(invoice.id)) return null;
-      const dueFloor = new Date(invoice.periodStart.getTime() + 5 * DAY);
-      const effectiveDue = invoice.dueDate.getTime() > dueFloor.getTime() ? invoice.dueDate : dueFloor;
-      const daysLate = Math.max(0, Math.floor((now.getTime() - effectiveDue.getTime()) / DAY));
+      const daysLate = lateDaysFromEnrollment(invoice.periodStart, now);
       return {
         invoiceId: invoice.id,
         userId: invoice.student.userId,

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { studentSearchWhere } from "@/lib/search";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { formatDate, formatPeriod } from "@/lib/format";
+import { dueDateFromEnrollment, enrollmentAnchor, lateDaysFromEnrollment } from "@/lib/late-days";
 
 export type DatasetStats = {
   totalCount: number;
@@ -44,19 +45,15 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
   const q = sp.get("q")?.trim() || undefined;
   const groupId = Number(sp.get("groupId")) || undefined;
   const specialtyId = Number(sp.get("specialtyId")) || undefined;
-  const DAY = 86_400_000;
   const now = new Date();
 
-  /**
-   * Defensive guard against corrupted/legacy due dates.
-   * An invoice can never be due before its cycle starts + 5 days. This prevents
-   * the "enrolled 19/11 → 16 days late since 05/11" style bug even if a stored
-   * dueDate was ever written with a hardcoded 5th-of-the-month value.
-   */
-  const effectiveDueFor = (invoice: { dueDate: Date; periodStart: Date }) => {
-    const floor = new Date(invoice.periodStart.getTime() + 5 * DAY);
-    return invoice.dueDate.getTime() > floor.getTime() ? invoice.dueDate : floor;
-  };
+  // Règle métier : échéance = inscription + 5 j ; retard = jours depuis
+  // l'inscription, affiché à partir du 6e jour (6, 7, 8, …).
+  type InvoiceWithAnchor = { periodStart: Date; student: { enrollments: { startedAt: Date }[] } };
+  const anchorFor = (invoice: InvoiceWithAnchor) =>
+    enrollmentAnchor(invoice.student.enrollments) ?? invoice.periodStart;
+  const dueFor = (invoice: InvoiceWithAnchor) => dueDateFromEnrollment(anchorFor(invoice));
+  const lateFor = (invoice: InvoiceWithAnchor, asOf: Date) => lateDaysFromEnrollment(anchorFor(invoice), asOf);
 
   // Find group name for subtitles if filtered
   let groupName: string | undefined;
@@ -161,8 +158,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       const st = invoiceStatus(i);
       if (st === "PAID") return false;
 
-      const due = effectiveDueFor(i);
-      const lateDays = Math.max(0, Math.floor((cutoffDate.getTime() - due.getTime()) / DAY));
+      const lateDays = lateFor(i, cutoffDate);
       if (onlyLate && lateDays <= 0) return false;
 
       return true;
@@ -171,16 +167,16 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     const rows = filtered
       .sort((a, b) => {
         // Sort by longest overdue first, then by student name
-        const delayA = Math.floor((cutoffDate.getTime() - effectiveDueFor(a).getTime()) / DAY);
-        const delayB = Math.floor((cutoffDate.getTime() - effectiveDueFor(b).getTime()) / DAY);
+        const delayA = lateFor(a, cutoffDate);
+        const delayB = lateFor(b, cutoffDate);
         if (delayB !== delayA) return delayB - delayA;
         return a.student.lastName.localeCompare(b.student.lastName);
       })
       .map((i) => {
         const t = invoiceTotals(i);
         const status = invoiceStatus(i);
-        const due = effectiveDueFor(i);
-        const lateDays = Math.floor((cutoffDate.getTime() - due.getTime()) / DAY);
+        const due = dueFor(i);
+        const lateDays = lateFor(i, cutoffDate);
         const lastPayment = i.payments[0];
 
         totalDue += t.due;
@@ -325,8 +321,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       if (status && st !== status) return false;
       if (unpaidOnly && st === "PAID") return false;
 
-      const due = effectiveDueFor(i);
-      const lateDays = Math.max(0, Math.floor((now.getTime() - due.getTime()) / DAY));
+      const lateDays = lateFor(i, now);
       if (onlyLate && (st === "PAID" || lateDays <= 0)) return false;
 
       return true;
@@ -337,8 +332,8 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       .map((i) => {
         const t = invoiceTotals(i);
         const st = invoiceStatus(i);
-        const due = effectiveDueFor(i);
-        const lateDays = Math.floor((now.getTime() - due.getTime()) / DAY);
+        const due = dueFor(i);
+        const lateDays = lateFor(i, now);
 
         totalDue += t.due;
         totalPaid += t.paid;

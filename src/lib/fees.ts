@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { lateDaysFromEnrollment } from "@/lib/late-days";
 
 export type InvoiceStatus = "PAID" | "PARTIAL" | "UNPAID";
 
@@ -33,18 +34,10 @@ export function invoiceStatus(invoice: InvoiceLike): InvoiceStatus {
 }
 
 export const isOverdue = (
-  invoice: InvoiceLike & { dueDate: Date; periodStart?: Date },
+  invoice: InvoiceLike & { dueDate: Date; periodStart: Date },
   now = new Date(),
-) => {
-  if (invoiceStatus(invoice) === "PAID") return false;
-  let due = invoice.dueDate;
-  // Defensive guard: never overdue before cycle start + 5 days.
-  if (invoice.periodStart) {
-    const floor = new Date(invoice.periodStart.getTime() + 5 * 86_400_000);
-    if (due.getTime() < floor.getTime()) due = floor;
-  }
-  return due < now;
-};
+) =>
+  invoiceStatus(invoice) !== "PAID" && lateDaysFromEnrollment(invoice.periodStart, now) > 0;
 
 export const firstOfMonth = (d = new Date(), offset = 0) =>
   new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + offset, 1));
