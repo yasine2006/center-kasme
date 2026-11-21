@@ -212,18 +212,38 @@ export function receiptPdf(d: {
   return out(doc);
 }
 
-export function tablePdf(d: { school: School; title: string; subtitle?: string; head: string[]; body: string[][] }) {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+export function tablePdf(d: {
+  school: School;
+  title: string;
+  subtitle?: string;
+  head: string[];
+  body: string[][];
+  foot?: string[][];
+  moneyIndexes?: number[];
+  orientation?: "portrait" | "landscape";
+}) {
+  const isLandscape = d.orientation === "landscape" || d.head.length > 7;
+  const doc = new jsPDF({ unit: "mm", format: "a4", orientation: isLandscape ? "landscape" : "portrait" });
   header(doc, d.school, d.title);
   doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(...GREY);
   doc.text([d.subtitle, `Généré le ${formatDate(new Date())}`].filter(Boolean).join("  ·  "), 14, 48);
+
+  const columnStyles: Record<number, { halign: "right" | "left" | "center" }> = {};
+  if (d.moneyIndexes) {
+    for (const idx of d.moneyIndexes) {
+      columnStyles[idx] = { halign: "right" };
+    }
+  }
 
   autoTable(doc, {
     startY: 54,
     head: [d.head],
     body: d.body,
-    styles: { fontSize: 8.5, cellPadding: 2.2, textColor: DARK },
-    headStyles: { fillColor: LIGHT, textColor: NAVY, fontStyle: "bold" },
+    foot: d.foot,
+    styles: { fontSize: d.head.length > 9 ? 7.5 : 8.5, cellPadding: 2, textColor: DARK },
+    headStyles: { fillColor: [11, 27, 59], textColor: [255, 255, 255], fontStyle: "bold" },
+    footStyles: { fillColor: [240, 244, 250], textColor: [11, 27, 59], fontStyle: "bold" },
+    columnStyles,
     alternateRowStyles: { fillColor: [252, 252, 253] },
     tableLineWidth: 0.2,
     tableLineColor: LINE,

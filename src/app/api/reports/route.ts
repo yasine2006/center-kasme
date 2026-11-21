@@ -27,12 +27,33 @@ export async function GET(req: NextRequest) {
   if (format === "pdf") {
     const school = await db.school.findUniqueOrThrow({ where: { id: session.schoolId } });
     const money = new Set(ds.money);
+
+    let foot: string[][] | undefined;
+    if (ds.stats && (ds.stats.totalDue !== undefined || ds.stats.totalPaid !== undefined || ds.stats.totalRemaining !== undefined)) {
+      const footRow = ds.head.map((colName, idx) => {
+        if (idx === 0) return `TOTAL (${ds.stats!.totalCount})`;
+        if (colName === "Total Dû" || colName === "Dû" || colName === "Mensualité") {
+          return formatDH(ds.stats!.totalDue ?? 0);
+        }
+        if (colName === "Total Payé" || colName === "Payé" || colName === "Montant") {
+          return formatDH(ds.stats!.totalPaid ?? 0);
+        }
+        if (colName === "Reste à Payer" || colName === "Reste") {
+          return formatDH(ds.stats!.totalRemaining ?? 0);
+        }
+        return "";
+      });
+      foot = [footRow];
+    }
+
     const pdf = tablePdf({
       school,
       title: ds.title,
       subtitle: ds.subtitle,
       head: ds.head,
       body: ds.rows.map((r) => r.map((v, i) => (money.has(i) ? formatDH(Number(v)) : String(v)))),
+      foot,
+      moneyIndexes: ds.money,
     });
     return new Response(new Uint8Array(pdf), { headers: headers("application/pdf") });
   }
@@ -41,6 +62,25 @@ export async function GET(req: NextRequest) {
   const ws = wb.addWorksheet(ds.title.slice(0, 31));
   ws.addRow(ds.head);
   ds.rows.forEach((r) => ws.addRow(r));
+
+  if (ds.stats && (ds.stats.totalDue !== undefined || ds.stats.totalPaid !== undefined || ds.stats.totalRemaining !== undefined)) {
+    const footRow = ds.head.map((colName, idx) => {
+      if (idx === 0) return `TOTAL (${ds.stats!.totalCount})`;
+      if (colName === "Total Dû" || colName === "Dû" || colName === "Mensualité") {
+        return ds.stats!.totalDue ?? 0;
+      }
+      if (colName === "Total Payé" || colName === "Payé" || colName === "Montant") {
+        return ds.stats!.totalPaid ?? 0;
+      }
+      if (colName === "Reste à Payer" || colName === "Reste") {
+        return ds.stats!.totalRemaining ?? 0;
+      }
+      return "";
+    });
+    const summaryRow = ws.addRow(footRow);
+    summaryRow.font = { bold: true };
+    summaryRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0F4F8" } };
+  }
 
   const header = ws.getRow(1);
   header.font = { bold: true, color: { argb: "FFFFFFFF" } };

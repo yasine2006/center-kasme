@@ -14,9 +14,10 @@ export async function GET(req: NextRequest) {
       title: ds.title,
       subtitle: ds.subtitle ?? null,
       head: ds.head,
-      rows: ds.rows.slice(0, 8),
+      rows: ds.rows.slice(0, 20),
       total: ds.rows.length,
       money: ds.money,
+      stats: ds.stats ?? null,
     },
     { headers: { "Cache-Control": "private, no-store" } },
   );
