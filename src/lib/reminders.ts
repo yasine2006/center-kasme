@@ -123,7 +123,10 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
         : paid > 0
           ? "PARTIAL"
           : "UNPAID";
-    const dueDate = invoice?.dueDate ?? cycle.dueDate;
+    // Never before cycle start + 5 days (guards against a corrupted/legacy dueDate).
+    const baseDue = invoice?.dueDate ?? cycle.dueDate;
+    const dueFloor = new Date((invoice?.periodStart ?? cycle.start).getTime() + 5 * DAY);
+    const dueDate = baseDue.getTime() > dueFloor.getTime() ? baseDue : dueFloor;
     const daysLate = remaining > 0 ? Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY)) : 0;
     const remindedAt = invoice ? (lastReminder.get(invoice.id) ?? null) : null;
     const phone = normalizePhone(s.parentPhone);
@@ -228,7 +231,9 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
       if (totals.remaining <= 0) return null;
       if (!invoice.student.userId) return null;
       if (today.has(invoice.id)) return null;
-      const daysLate = Math.max(0, Math.floor((now.getTime() - invoice.dueDate.getTime()) / DAY));
+      const dueFloor = new Date(invoice.periodStart.getTime() + 5 * DAY);
+      const effectiveDue = invoice.dueDate.getTime() > dueFloor.getTime() ? invoice.dueDate : dueFloor;
+      const daysLate = Math.max(0, Math.floor((now.getTime() - effectiveDue.getTime()) / DAY));
       return {
         invoiceId: invoice.id,
         userId: invoice.student.userId,

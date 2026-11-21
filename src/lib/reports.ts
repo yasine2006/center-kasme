@@ -47,6 +47,17 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
   const DAY = 86_400_000;
   const now = new Date();
 
+  /**
+   * Defensive guard against corrupted/legacy due dates.
+   * An invoice can never be due before its cycle starts + 5 days. This prevents
+   * the "enrolled 19/11 → 16 days late since 05/11" style bug even if a stored
+   * dueDate was ever written with a hardcoded 5th-of-the-month value.
+   */
+  const effectiveDueFor = (invoice: { dueDate: Date; periodStart: Date }) => {
+    const floor = new Date(invoice.periodStart.getTime() + 5 * DAY);
+    return invoice.dueDate.getTime() > floor.getTime() ? invoice.dueDate : floor;
+  };
+
   // Find group name for subtitles if filtered
   let groupName: string | undefined;
   if (groupId) {
@@ -150,7 +161,8 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       const st = invoiceStatus(i);
       if (st === "PAID") return false;
 
-      const lateDays = Math.max(0, Math.floor((now.getTime() - i.dueDate.getTime()) / DAY));
+      const due = effectiveDueFor(i);
+      const lateDays = Math.max(0, Math.floor((cutoffDate.getTime() - due.getTime()) / DAY));
       if (onlyLate && lateDays <= 0) return false;
 
       return true;
@@ -159,15 +171,16 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     const rows = filtered
       .sort((a, b) => {
         // Sort by longest overdue first, then by student name
-        const delayA = Math.floor((now.getTime() - a.dueDate.getTime()) / DAY);
-        const delayB = Math.floor((now.getTime() - b.dueDate.getTime()) / DAY);
+        const delayA = Math.floor((cutoffDate.getTime() - effectiveDueFor(a).getTime()) / DAY);
+        const delayB = Math.floor((cutoffDate.getTime() - effectiveDueFor(b).getTime()) / DAY);
         if (delayB !== delayA) return delayB - delayA;
         return a.student.lastName.localeCompare(b.student.lastName);
       })
       .map((i) => {
         const t = invoiceTotals(i);
         const status = invoiceStatus(i);
-        const lateDays = Math.floor((now.getTime() - i.dueDate.getTime()) / DAY);
+        const due = effectiveDueFor(i);
+        const lateDays = Math.floor((cutoffDate.getTime() - due.getTime()) / DAY);
         const lastPayment = i.payments[0];
 
         totalDue += t.due;
@@ -193,7 +206,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
           groupLabels,
           formatDate(i.periodStart),
           formatDate(i.periodEnd),
-          formatDate(i.dueDate),
+          formatDate(due),
           delayLabel,
           t.due,
           t.paid,
@@ -312,7 +325,8 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       if (status && st !== status) return false;
       if (unpaidOnly && st === "PAID") return false;
 
-      const lateDays = Math.max(0, Math.floor((now.getTime() - i.dueDate.getTime()) / DAY));
+      const due = effectiveDueFor(i);
+      const lateDays = Math.max(0, Math.floor((now.getTime() - due.getTime()) / DAY));
       if (onlyLate && (st === "PAID" || lateDays <= 0)) return false;
 
       return true;
@@ -323,7 +337,8 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       .map((i) => {
         const t = invoiceTotals(i);
         const st = invoiceStatus(i);
-        const lateDays = Math.floor((now.getTime() - i.dueDate.getTime()) / DAY);
+        const due = effectiveDueFor(i);
+        const lateDays = Math.floor((now.getTime() - due.getTime()) / DAY);
 
         totalDue += t.due;
         totalPaid += t.paid;
@@ -346,7 +361,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
           i.student.parentPhone ?? "—",
           groupLabels,
           formatPeriod(i.periodStart, i.periodEnd),
-          formatDate(i.dueDate),
+          formatDate(due),
           delayLabel,
           t.due,
           t.paid,

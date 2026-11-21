@@ -32,8 +32,19 @@ export function invoiceStatus(invoice: InvoiceLike): InvoiceStatus {
   return "PAID";
 }
 
-export const isOverdue = (invoice: InvoiceLike & { dueDate: Date }, now = new Date()) =>
-  invoiceStatus(invoice) !== "PAID" && invoice.dueDate < now;
+export const isOverdue = (
+  invoice: InvoiceLike & { dueDate: Date; periodStart?: Date },
+  now = new Date(),
+) => {
+  if (invoiceStatus(invoice) === "PAID") return false;
+  let due = invoice.dueDate;
+  // Defensive guard: never overdue before cycle start + 5 days.
+  if (invoice.periodStart) {
+    const floor = new Date(invoice.periodStart.getTime() + 5 * 86_400_000);
+    if (due.getTime() < floor.getTime()) due = floor;
+  }
+  return due < now;
+};
 
 export const firstOfMonth = (d = new Date(), offset = 0) =>
   new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + offset, 1));
