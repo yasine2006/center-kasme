@@ -3,6 +3,7 @@ import { FileText } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
+import { effectiveDueDate } from "@/lib/late-days";
 import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 import { Avatar, Badge } from "@/components/ui";
 import { requireStudent } from "../queries";
@@ -50,7 +51,7 @@ export default async function StudentPayments() {
                   <span className="font-medium">{formatPeriod(f.periodStart, f.periodEnd)}</span>
                   <Badge tone={meta.tone}>{meta.label}</Badge>
                 </div>
-                <p className="text-xs text-muted">échéance {formatDate(f.dueDate)}</p>
+                <p className="text-xs text-muted">échéance {formatDate(effectiveDueDate(f))}</p>
                 <p className="mt-1 truncate text-xs text-muted">{f.lines.map((l) => l.label).join(", ")}</p>
                 <div className="mt-1.5 flex items-center justify-between text-sm text-muted">
                   <span>

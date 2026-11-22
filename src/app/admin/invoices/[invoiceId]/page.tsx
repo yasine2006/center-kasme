@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { formatDate, formatDH, formatMonth, formatPeriod } from "@/lib/format";
+import { effectiveDueDate } from "@/lib/late-days";
 import { Avatar, Badge, Card, PageHeader, td, th } from "@/components/ui";
 import { PayForm } from "./pay-form";
 
@@ -63,7 +64,7 @@ export default async function InvoicePage({
         subtitle={
           <span>
             <span className="capitalize">{formatMonth(invoice.month)}</span> · {formatPeriod(invoice.periodStart, invoice.periodEnd)} · échéance{" "}
-            {formatDate(invoice.dueDate)}
+            {formatDate(effectiveDueDate(invoice))}
           </span>
         }
       />

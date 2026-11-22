@@ -152,7 +152,7 @@ export function invoicePdf(d: {
   // Footer note
   const fy = doc.internal.pageSize.getHeight() - 22;
   doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(...GREY);
-  doc.text("Les montants sont exprimés en dirhams (DH). Échéance : 5 jours après la fin de la période.", 14, fy);
+  doc.text("Les montants sont exprimés en dirhams (DH). Échéance : anniversaire mensuel de l'inscription.", 14, fy);
   doc.text("Merci de régulariser avant l'échéance.", 14, fy + 4);
 
   footer(doc);

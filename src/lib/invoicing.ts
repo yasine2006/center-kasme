@@ -1,12 +1,9 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { monthlyDueDate } from "@/lib/late-days";
 
 export const MAX_BILLING_MONTHS = 12;
-/** An invoice is due this many days after the end of its cycle. */
-export const DUE_DAYS_AFTER_CYCLE = 5;
-
-const DAY = 86_400_000;
 
 export type EnrollmentForBilling = {
   id: number;
@@ -19,7 +16,7 @@ export type EnrollmentForBilling = {
  * One billing cycle for one student.
  * - `start` is the enrollment day (clamped for short months).
  * - `end` is the start of the next cycle (exclusive).
- * - `dueDate` = `end` + 5 days.
+ * - `dueDate` = anniversaire mensuel de l'inscription (= `start`).
  */
 export type BillingCycle = {
   index: number;
@@ -32,8 +29,6 @@ export type BillingCycle = {
 export const monthStart = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 export const monthKey = (d: Date) => d.toISOString().slice(0, 7);
 export const parseMonthKey = (key: string) => (/^\d{4}-\d{2}$/.test(key) ? new Date(`${key}-01T00:00:00.000Z`) : null);
-
-export const addDays = (date: Date, n: number) => new Date(date.getTime() + n * DAY);
 
 /** Adds `n` months, keeping the day-of-month and clamping to the target month's last day. */
 export function addMonthsClamped(date: Date, n: number) {
@@ -55,7 +50,8 @@ export const billingAnchor = <T extends { startedAt: Date }>(enrollments: T[]) =
 export function cycleAt(anchor: Date, index: number): BillingCycle {
   const start = addMonthsClamped(anchor, index);
   const end = addMonthsClamped(anchor, index + 1);
-  return { index, month: monthStart(start), start, end, dueDate: addDays(end, DUE_DAYS_AFTER_CYCLE) };
+  const dueMonth = monthStart(start);
+  return { index, month: dueMonth, start, end, dueDate: monthlyDueDate(anchor, dueMonth) };
 }
 
 /** Index of the cycle that contains `date` for a student anchored on `anchor`. */
@@ -104,6 +100,7 @@ export async function ensureInvoiceForCycle(
         month: cycle.month,
         periodStart: cycle.start,
         periodEnd: cycle.end,
+        // Échéance = monthlyDueDate(ancre d'inscription, cycle.month), calculée dans cycleAt().
         dueDate: cycle.dueDate,
         lines: { create: active.map((e) => ({ enrollmentId: e.id, label: e.group.name, amount: e.monthlyFee })) },
       },

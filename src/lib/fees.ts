@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { lateDaysFromEnrollment } from "@/lib/late-days";
+import { lateDaysForMonth } from "@/lib/late-days";
 
 export type InvoiceStatus = "PAID" | "PARTIAL" | "UNPAID";
 
@@ -33,11 +33,12 @@ export function invoiceStatus(invoice: InvoiceLike): InvoiceStatus {
   return "PAID";
 }
 
+/** Retard calculé avec la même règle mensuelle que les relances (UTC). */
 export const isOverdue = (
-  invoice: InvoiceLike & { dueDate: Date; periodStart: Date },
+  invoice: InvoiceLike & { month: Date; periodStart: Date },
   now = new Date(),
 ) =>
-  invoiceStatus(invoice) !== "PAID" && lateDaysFromEnrollment(invoice.periodStart, now) > 0;
+  invoiceStatus(invoice) !== "PAID" && lateDaysForMonth(invoice.periodStart, invoice.month, now) > 0;
 
 export const firstOfMonth = (d = new Date(), offset = 0) =>
   new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + offset, 1));

@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { invoicePdf } from "@/lib/pdf";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
-import { dueDateFromEnrollment } from "@/lib/late-days";
+import { effectiveDueDate } from "@/lib/late-days";
 
 export async function GET(_: Request, { params }: { params: Promise<{ invoiceId: string }> }) {
   const session = await getSession();
@@ -30,7 +30,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ invoiceId:
     student: `${student.firstName} ${student.lastName}`,
     periodStart: invoice.periodStart,
     periodEnd: invoice.periodEnd,
-    dueDate: dueDateFromEnrollment(invoice.periodStart),
+    dueDate: effectiveDueDate(invoice),
     lines: invoice.lines.map((l) => ({ label: l.label, amount: Number(l.amount.toString()) })),
     due: totals.due,
     paid: totals.paid,

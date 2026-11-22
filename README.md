@@ -164,8 +164,8 @@ curl -fsS -X POST \
 | Règle | Détail |
 |---|---|
 | **Mensualités** | Une facture par élève et par cycle. Le cycle démarre le jour de la première inscription et dure un mois (jour identique le mois suivant, borné au dernier jour du mois). Premier cycle = mensualité complète, sans prorata. |
-| **Échéance** | 5 jours après la fin du cycle. Ex. inscription le 12/11 → cycle 12/11 → 12/12, échéance 17/12 ; cycle suivant 12/12 → 12/01, échéance 17/01. |
-| **Relances** | Notification in-app + lien WhatsApp (`wa.me`), une fois par jour et par facture. |
+| **Échéance** | Anniversaire mensuel de l'inscription (UTC), ramené au dernier jour du mois si besoin. Ex. inscription le 15/10 → échéance le 15/11 puis le 15/12 ; inscription le 31/01 → 28/02 (29 les années bissextiles) puis 31/03. Aucun délai de grâce, retard remis à 0 chaque mois. |
+| **Relances** | Notification in-app + lien WhatsApp (`wa.me`) ouvert manuellement, jamais d'envoi automatique. Le filtre « Échéances à ce jour » ne relance que le mois affiché ; « Tous les retardataires » couvre le mois affiché et le précédent. |
 | **Paiement par matière** | Un encaissement peut être affecté à une ligne de facture précise. |
 | **Retirer / réactiver une matière** | `STOPPED` / `ACTIVE` sans supprimer l'historique. |
 | **Inscriptions** | Ouvertes si `maintenant ∈ [début, fin]` et non clôturées. |

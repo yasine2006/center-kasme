@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { countMissingInvoices } from "@/lib/invoicing";
+import { effectiveDueDate } from "@/lib/late-days";
 import { formatDate, formatDH, formatPeriod } from "@/lib/format";
 import { AutoForm } from "@/components/auto-form";
 import { Pagination } from "@/components/pagination";
@@ -163,7 +164,7 @@ export default async function InvoicesPage({
                     <td className={`${td} whitespace-nowrap`}>
                       <span className="font-medium">{formatPeriod(f.periodStart, f.periodEnd)}</span>
                       <span className="block text-xs text-muted">
-                        {last ? `payé le ${formatDate(last.paidAt)}` : `échéance ${formatDate(f.dueDate)}`}
+                        {last ? `payé le ${formatDate(last.paidAt)}` : `échéance ${formatDate(effectiveDueDate(f))}`}
                       </span>
                     </td>
                     <td className={td}>

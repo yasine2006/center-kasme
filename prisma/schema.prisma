@@ -202,7 +202,7 @@ model Enrollment {
 // ─── Finance: one Invoice per student per billing cycle, many Payments ─────
 // A cycle starts on the student's enrollment day and lasts one month (clamped
 // for short months). The first cycle bills the full monthly fee (no proration).
-// Due date = cycle end + 5 days.
+// Due date = monthly anniversary of the enrollment anchor (no grace delay).
 model Invoice {
   id          Int      @id @default(autoincrement())
   studentId   Int

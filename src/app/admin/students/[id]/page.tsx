@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/session";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { billingAnchor, cycleAt, cycleIndexForDate, expectedDue, MAX_BILLING_MONTHS, monthKey, type BillingCycle } from "@/lib/invoicing";
 import { formatDate, formatDH, formatPeriod } from "@/lib/format";
+import { effectiveDueDate } from "@/lib/late-days";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Avatar, Badge, btnGhost, btnPrimary, Card, td, th } from "@/components/ui";
 import { ensureMonthlyInvoice, openInvoiceForMonth } from "../../invoices/actions";
@@ -58,7 +59,13 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
     }
   }
   for (const f of student.invoices) {
-    cycleMap.set(monthKey(f.month), { index: 0, month: f.month, start: f.periodStart, end: f.periodEnd, dueDate: f.dueDate });
+    cycleMap.set(monthKey(f.month), {
+      index: 0,
+      month: f.month,
+      start: f.periodStart,
+      end: f.periodEnd,
+      dueDate: effectiveDueDate(f),
+    });
   }
 
   const cycleRows = [...cycleMap.entries()]

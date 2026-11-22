@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { studentSearchWhere } from "@/lib/search";
 import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { formatDate, formatPeriod } from "@/lib/format";
-import { dueDateFromEnrollment, enrollmentAnchor, lateDaysFromEnrollment } from "@/lib/late-days";
+import { enrollmentAnchor, lateDaysForMonth, monthlyDueDate } from "@/lib/late-days";
 
 export type DatasetStats = {
   totalCount: number;
@@ -47,13 +47,14 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
   const specialtyId = Number(sp.get("specialtyId")) || undefined;
   const now = new Date();
 
-  // Règle métier : échéance = inscription + 5 j ; retard = jours depuis
-  // l'inscription, affiché à partir du 6e jour (6, 7, 8, …).
-  type InvoiceWithAnchor = { periodStart: Date; student: { enrollments: { startedAt: Date }[] } };
-  const anchorFor = (invoice: InvoiceWithAnchor) =>
+  // Règle métier : échéance = anniversaire mensuel de l'inscription, retard
+  // remis à 0 au début de chaque mois de facturation. On recalcule à la lecture
+  // pour ne pas dépendre d'un éventuel Invoice.dueDate périmé.
+  type InvoiceForDue = { month: Date; periodStart: Date; student: { enrollments: { startedAt: Date }[] } };
+  const anchorFor = (invoice: InvoiceForDue) =>
     enrollmentAnchor(invoice.student.enrollments) ?? invoice.periodStart;
-  const dueFor = (invoice: InvoiceWithAnchor) => dueDateFromEnrollment(anchorFor(invoice));
-  const lateFor = (invoice: InvoiceWithAnchor, asOf: Date) => lateDaysFromEnrollment(anchorFor(invoice), asOf);
+  const effectiveDue = (invoice: InvoiceForDue) => monthlyDueDate(anchorFor(invoice), invoice.month);
+  const lateOf = (invoice: InvoiceForDue, asOf: Date) => lateDaysForMonth(anchorFor(invoice), invoice.month, asOf);
 
   // Find group name for subtitles if filtered
   let groupName: string | undefined;
@@ -158,7 +159,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       const st = invoiceStatus(i);
       if (st === "PAID") return false;
 
-      const lateDays = lateFor(i, cutoffDate);
+      const lateDays = lateOf(i, cutoffDate);
       if (onlyLate && lateDays <= 0) return false;
 
       return true;
@@ -167,16 +168,16 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     const rows = filtered
       .sort((a, b) => {
         // Sort by longest overdue first, then by student name
-        const delayA = lateFor(a, cutoffDate);
-        const delayB = lateFor(b, cutoffDate);
+        const delayA = lateOf(a, cutoffDate);
+        const delayB = lateOf(b, cutoffDate);
         if (delayB !== delayA) return delayB - delayA;
         return a.student.lastName.localeCompare(b.student.lastName);
       })
       .map((i) => {
         const t = invoiceTotals(i);
         const status = invoiceStatus(i);
-        const due = dueFor(i);
-        const lateDays = lateFor(i, cutoffDate);
+        const due = effectiveDue(i);
+        const lateDays = lateOf(i, cutoffDate);
         const lastPayment = i.payments[0];
 
         totalDue += t.due;
@@ -321,7 +322,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       if (status && st !== status) return false;
       if (unpaidOnly && st === "PAID") return false;
 
-      const lateDays = lateFor(i, now);
+      const lateDays = lateOf(i, now);
       if (onlyLate && (st === "PAID" || lateDays <= 0)) return false;
 
       return true;
@@ -332,8 +333,8 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       .map((i) => {
         const t = invoiceTotals(i);
         const st = invoiceStatus(i);
-        const due = dueFor(i);
-        const lateDays = lateFor(i, now);
+        const due = effectiveDue(i);
+        const lateDays = lateOf(i, now);
 
         totalDue += t.due;
         totalPaid += t.paid;

@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { invoiceTotals } from "@/lib/fees";
 import { formatDH, formatPeriod } from "@/lib/format";
 import { billingAnchor, cycleForMonth, enrollmentsBillableFor, monthKey, monthStart } from "@/lib/invoicing";
-import { enrollmentAnchor, lateDaysFromEnrollment } from "@/lib/late-days";
+import { enrollmentAnchor, isDueAsOf, lateDaysForMonth, monthlyDueDate } from "@/lib/late-days";
 
 export const REMINDER_TITLE = "Rappel de paiement";
 
@@ -18,6 +18,12 @@ export type ReminderRow = {
   phone: string | null;
   userId: number | null;
   invoiceId: number | null;
+  /** Ancre d'inscription (UTC), null si l'élève n'a pas d'inscription. */
+  enrollmentStart: Date | null;
+  /** Échéance mensuelle effective, fallback sur l'échéance de la facture. */
+  dueDate: Date | null;
+  /** L'échéance du mois sélectionné est-elle atteinte à `now` ? */
+  isDueAsOfToday: boolean;
   status: ReminderStatus;
   due: number;
   paid: number;
@@ -123,9 +129,11 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
         : paid > 0
           ? "PARTIAL"
           : "UNPAID";
-    // Échéance = inscription + 5 j ; retard = jours depuis l'inscription à partir du 6e jour.
-    const start = enrollmentAnchor(s.enrollments) ?? cycle.start;
-    const daysLate = remaining > 0 ? lateDaysFromEnrollment(start, now) : 0;
+    // Échéance = anniversaire mensuel de l'inscription, retard remis à 0 chaque mois.
+    const start = enrollmentAnchor(s.enrollments);
+    const dueDate = start ? monthlyDueDate(start, month) : (invoice?.dueDate ?? null);
+    const isDueAsOfToday = start ? isDueAsOf(start, month, now) : true;
+    const daysLate = remaining > 0 && start ? lateDaysForMonth(start, month, now) : 0;
     const remindedAt = invoice ? (lastReminder.get(invoice.id) ?? null) : null;
     const phone = normalizePhone(s.parentPhone);
 
@@ -137,6 +145,9 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
       phone,
       userId: s.userId,
       invoiceId: invoice?.id ?? null,
+      enrollmentStart: start,
+      dueDate,
+      isDueAsOfToday,
       status,
       due,
       paid,
@@ -153,7 +164,14 @@ export async function reminderRows(schoolId: number, month: Date): Promise<Remin
   });
 }
 
-export type RemindOptions = { studentIds?: number[]; onlyOverdue?: boolean };
+export type RemindOptions = {
+  studentIds?: number[];
+  onlyOverdue?: boolean;
+  /** Ne relancer que les échéances atteintes jusqu'à aujourd'hui, dans le mois demandé. */
+  onlyDueAsOfToday?: boolean;
+  /** Autoriser un second envoi le même jour (boutons de relance global). */
+  allowRepeat?: boolean;
+};
 
 export async function sendReminders(schoolId: number, month: Date, opts: RemindOptions = {}) {
   const rows = (await reminderRows(schoolId, month)).filter(
@@ -161,9 +179,10 @@ export async function sendReminders(schoolId: number, month: Date, opts: RemindO
       r.invoiceId !== null &&
       r.remaining > 0 &&
       r.userId !== null &&
-      !r.remindedToday &&
+      (opts.allowRepeat === true || !r.remindedToday) &&
       (!opts.studentIds || opts.studentIds.includes(r.studentId)) &&
-      (!opts.onlyOverdue || r.daysLate > 0),
+      (!opts.onlyOverdue || r.daysLate > 0) &&
+      (!opts.onlyDueAsOfToday || r.isDueAsOfToday),
   );
   if (!rows.length) return 0;
 
@@ -200,7 +219,9 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
   const invoices = await db.invoice.findMany({
     where: {
       student: { schoolId, archived: false, status: "ACTIVE" },
-      dueDate: { lt: now },
+      // Pré-filtre large : l'échéance effective est recalculée ci-dessous, on ne
+      // fait pas confiance à un Invoice.dueDate éventuellement périmé.
+      month: { lte: monthStart(now) },
     },
     include: {
       lines: { select: { amount: true } },
@@ -229,7 +250,9 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
       if (totals.remaining <= 0) return null;
       if (!invoice.student.userId) return null;
       if (today.has(invoice.id)) return null;
-      const daysLate = lateDaysFromEnrollment(invoice.periodStart, now);
+      const dueDate = monthlyDueDate(invoice.periodStart, invoice.month);
+      if (startOfDay(now).getTime() < startOfDay(dueDate).getTime()) return null;
+      const daysLate = lateDaysForMonth(invoice.periodStart, invoice.month, now);
       return {
         invoiceId: invoice.id,
         userId: invoice.student.userId,
@@ -272,6 +295,7 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
 export async function reminderSummary(schoolId: number, month = monthStart(new Date())) {
   const rows = await reminderRows(schoolId, month);
   const unpaid = rows.filter((r) => r.remaining > 0);
+  const dueAsOfToday = unpaid.filter((r) => r.isDueAsOfToday);
   return {
     month,
     rows,
@@ -281,6 +305,12 @@ export async function reminderSummary(schoolId: number, month = monthStart(new D
     upToDate: rows.filter((r) => r.status === "PAID").length,
     late: unpaid.filter((r) => r.daysLate > 0).length,
     missing: rows.filter((r) => r.status === "MISSING").length,
+    // Conservé pour l'ancien bouton : hors « déjà relancé aujourd'hui ».
     sendable: unpaid.filter((r) => r.invoiceId !== null && r.userId !== null && !r.remindedToday).length,
+    // Échéances atteintes à ce jour (le bouton reste cliquable le même jour :
+    // allowRepeat, on ne filtre donc pas sur remindedToday ici).
+    dueAsOfTodayCount: dueAsOfToday.length,
+    dueAsOfTodayRemaining: dueAsOfToday.reduce((s, r) => s + r.remaining, 0),
+    dueAsOfTodaySendable: dueAsOfToday.filter((r) => r.invoiceId !== null && r.userId !== null).length,
   };
 }
