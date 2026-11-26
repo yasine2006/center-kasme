@@ -1,16 +1,21 @@
 import { db } from "@/lib/db";
+import { requireSecret, safeEqual } from "@/lib/secrets";
 import { sendOverdueReminders } from "@/lib/reminders";
 
-function isAuthorized(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return req.headers.get("authorization") === `Bearer ${secret}`;
+function isAuthorized(req: Request, secret: string) {
+  const header = req.headers.get("authorization") ?? "";
+  const provided = header.replace(/^Bearer\s+/i, "").trim();
+  return safeEqual(provided, secret);
 }
 
 async function run(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return Response.json({ error: "CRON_SECRET non configuré" }, { status: 503 });
-  if (!isAuthorized(req)) {
+  let secret: string;
+  try {
+    secret = requireSecret("CRON_SECRET");
+  } catch {
+    return Response.json({ error: "CRON_SECRET non configuré" }, { status: 503 });
+  }
+  if (!isAuthorized(req, secret)) {
     return Response.json({ error: "Non autorisé" }, { status: 401 });
   }
 

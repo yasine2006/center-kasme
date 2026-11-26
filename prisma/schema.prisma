@@ -248,6 +248,7 @@ model Payment {
   line    InvoiceLine? @relation(fields: [lineId], references: [id], onDelete: SetNull)
 
   @@index([lineId])
+  @@index([invoiceId, paidAt])
 }
 
 // ─── Attendance, notifications, audit ──────────────────────────────────────
@@ -308,6 +309,8 @@ model AuditLog {
 
   school School @relation(fields: [schoolId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+
+  @@index([schoolId, action, entity, entityId, createdAt])
 }
 
 model TeacherAttendance {

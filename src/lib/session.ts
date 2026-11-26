@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { requireSecret } from "@/lib/secrets";
 
 export type Role = "ADMIN" | "TEACHER" | "STUDENT";
 
@@ -16,11 +17,7 @@ export type SessionPayload = {
 const COOKIE = "session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-const key = () => {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) throw new Error("AUTH_SECRET is not set");
-  return new TextEncoder().encode(secret);
-};
+const key = () => new TextEncoder().encode(requireSecret("AUTH_SECRET"));
 
 export const homeFor = (role: Role) =>
   ({ ADMIN: "/admin", TEACHER: "/teacher", STUDENT: "/student" })[role];
@@ -62,13 +59,24 @@ export async function requireRole(...roles: Role[]) {
   if (!session) redirect("/login");
   if (!roles.includes(session.role)) redirect(homeFor(session.role));
 
-  // A signed JWT can outlive a database reset: make sure the account still
-  // exists (and still belongs to the same school) before touching any data.
+  // A signed JWT can outlive a database reset or an account deactivation:
+  // make sure the account is still active and unchanged before touching data.
   const user = await db.user.findFirst({
-    where: { id: session.userId, schoolId: session.schoolId, role: session.role },
+    where: { id: session.userId, schoolId: session.schoolId, role: session.role, active: true },
     select: { id: true },
   });
   if (!user) redirect("/logout");
 
   return session;
+}
+
+/** Same check as requireRole(), but returns null instead of redirecting (for API routes). */
+export async function requireApiRole(...roles: Role[]): Promise<SessionPayload | null> {
+  const session = await getSession();
+  if (!session || !roles.includes(session.role)) return null;
+  const user = await db.user.findFirst({
+    where: { id: session.userId, schoolId: session.schoolId, role: session.role, active: true },
+    select: { id: true },
+  });
+  return user ? session : null;
 }

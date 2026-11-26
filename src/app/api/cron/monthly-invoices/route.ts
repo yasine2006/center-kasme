@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
 import { generateMissingInvoices, monthKey } from "@/lib/invoicing";
+import { requireSecret, safeEqual } from "@/lib/secrets";
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-
+function isAuthorized(request: Request, secret: string) {
   const header = request.headers.get("authorization") ?? "";
-  const bearer = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
+  const bearer = header.replace(/^Bearer\s+/i, "").trim();
   const provided = bearer || (request.headers.get("x-cron-secret") ?? "").trim();
-  return provided === secret;
+  return safeEqual(provided, secret);
 }
 
 async function run(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
+  let secret: string;
+  try {
+    secret = requireSecret("CRON_SECRET");
+  } catch {
     return NextResponse.json({ ok: false, error: "CRON_SECRET is not configured" }, { status: 503 });
   }
-  if (!isAuthorized(request)) {
+  if (!isAuthorized(request, secret)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 

@@ -28,8 +28,8 @@ function env(key: string): string {
  */
 async function main() {
   const password = env("ADMIN_PASSWORD");
-  if (password.length < 8) {
-    throw new Error("ADMIN_PASSWORD must be at least 8 characters");
+  if (password.length < 8 || password === "MotDePasseFort123!") {
+    throw new Error("ADMIN_PASSWORD must be a random password of at least 8 characters");
   }
 
   const adminEmail = env("ADMIN_EMAIL").toLowerCase();

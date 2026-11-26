@@ -226,7 +226,15 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
     include: {
       lines: { select: { amount: true } },
       payments: { select: { amount: true } },
-      student: { select: { id: true, firstName: true, lastName: true, userId: true } },
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          userId: true,
+          enrollments: { select: { startedAt: true } },
+        },
+      },
     },
     orderBy: { dueDate: "asc" },
   });
@@ -250,9 +258,12 @@ export async function sendOverdueReminders(schoolId: number, now = new Date()) {
       if (totals.remaining <= 0) return null;
       if (!invoice.student.userId) return null;
       if (today.has(invoice.id)) return null;
-      const dueDate = monthlyDueDate(invoice.periodStart, invoice.month);
+      // Une seule règle : anniversaire de l'ancre d'inscription (repli sur
+      // periodStart pour les anciennes factures sans inscription exploitable).
+      const anchor = enrollmentAnchor(invoice.student.enrollments) ?? invoice.periodStart;
+      const dueDate = monthlyDueDate(anchor, invoice.month);
       if (startOfDay(now).getTime() < startOfDay(dueDate).getTime()) return null;
-      const daysLate = lateDaysForMonth(invoice.periodStart, invoice.month, now);
+      const daysLate = lateDaysForMonth(anchor, invoice.month, now);
       return {
         invoiceId: invoice.id,
         userId: invoice.student.userId,

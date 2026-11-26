@@ -184,6 +184,8 @@ curl -fsS -X POST \
 | `npm run start` | Démarrage production |
 | `npm run lint` | Linting |
 | `npm run typecheck` | Vérification TypeScript |
+| `npm test` | Tests unitaires (Vitest) |
+| `npm run test:watch` | Tests en mode watch |
 | `npm run db:generate` | Générer le client Prisma |
 | `npm run db:migrate` | Migrations en développement |
 | `npm run db:deploy` | Migrations en production |
@@ -209,6 +211,8 @@ src/
 └── lib/                  # logique métier (session, facturation, PDF…)
 prisma/                   # schema + migrations
 scripts/                  # bootstrap, db-check, blank-check
+tests/                    # tests unitaires Vitest
+vitest.config.mts         # configuration des tests
 ```
 
 ---
@@ -217,7 +221,8 @@ scripts/                  # bootstrap, db-check, blank-check
 
 - Ne jamais committer `.env`.
 - Utiliser des secrets différents par environnement.
-- `AUTH_SECRET` et `CRON_SECRET` sont obligatoires.
+- `AUTH_SECRET` et `CRON_SECRET` sont obligatoires (32 caractères aléatoires minimum ; les valeurs d'`example` sont refusées).
+- `NEXT_PUBLIC_SITE_URL` doit être l'URL publique (`https://www.elitekacemcenter.com`) pour les métadonnées, le sitemap et robots.txt.
 - En production, utiliser uniquement `prisma migrate deploy`.
 - Sauvegarder la base (Neon PITR ou `pg_dump`).
 - HTTPS obligatoire (Vercel le fournit).

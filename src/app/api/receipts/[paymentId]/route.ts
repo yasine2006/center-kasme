@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireApiRole } from "@/lib/session";
 import { receiptPdf } from "@/lib/pdf";
 import { invoiceTotals } from "@/lib/fees";
 
 export async function GET(_: Request, { params }: { params: Promise<{ paymentId: string }> }) {
-  const session = await getSession();
+  const session = await requireApiRole("ADMIN", "STUDENT");
   if (!session) return new Response("Non authentifié", { status: 401 });
 
   const id = Number((await params).paymentId);

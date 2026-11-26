@@ -2,15 +2,14 @@ import type { NextRequest } from "next/server";
 import ExcelJS from "exceljs";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { getSession } from "@/lib/session";
+import { requireApiRole } from "@/lib/session";
 import { buildDataset } from "@/lib/reports";
 import { tablePdf } from "@/lib/pdf";
 import { formatDH } from "@/lib/format";
 
 export async function GET(req: NextRequest) {
-  const session = await getSession();
+  const session = await requireApiRole("ADMIN");
   if (!session) return new Response("Non authentifié", { status: 401 });
-  if (session.role !== "ADMIN") return new Response("Interdit", { status: 403 });
 
   const sp = req.nextUrl.searchParams;
   const format = sp.get("format") === "pdf" ? "pdf" : "xlsx";
