@@ -955,50 +955,6 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           </div>
         </section>
 
-        {/* ── TÉMOIGNAGES ── */}
-        <section className="py-24 bg-white border-b border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-5 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Témoignages</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
-                Ce que disent nos apprenants
-              </h2>
-              <p className="text-slate-600 mt-3 text-sm sm:text-base">
-                La satisfaction de nos élèves est notre meilleure récompense.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { name: "Amina B.", role: "Étudiante IELTS", text: "Grâce à The Elite Centre, j'ai obtenu un score de 7.5 à l'IELTS. Les professeurs sont très compétents et le suivi personnalisé fait toute la différence.", rating: 5 },
-                { name: "Youssef M.", role: "Étudiant Allemand", text: "J'ai appris l'allemand de A1 à B2 en moins d'un an. Les cours sont interactifs et les professeurs très patients. Je recommande vivement !", rating: 5 },
-                { name: "Fatima Z.", role: "Parent d'élève", text: "Mon fils a fait d'énormes progrès en anglais. L'ambiance est excellente et les enseignants sont très à l'écoute. Merci à toute l'équipe !", rating: 5 },
-              ].map((t) => (
-                <div
-                  key={t.name}
-                  className="bg-slate-50 rounded-2xl p-7 border border-slate-200/80 card-lift"
-                >
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: t.rating }).map((_, j) => (
-                      <Star key={j} className="h-4 w-4 text-amber-400 fill-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-slate-600 leading-relaxed italic">&ldquo;{t.text}&rdquo;</p>
-                  <div className="mt-5 pt-4 border-t border-slate-200/80 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-navy-950">{t.name}</div>
-                      <div className="text-xs text-slate-500">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ── CONTACT & LOCATION (DYNAMIC FROM DB) ── */}
         <section id="contact" className="py-24 bg-slate-50">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
