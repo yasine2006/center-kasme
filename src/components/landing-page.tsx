@@ -1081,7 +1081,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
             <div className="mt-6 flex items-center gap-3">
               <a
-                href={`https://wa.me/${waNumber}`}
+                href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20avoir%20des%20informations%20sur%20les%20formations%20et%20les%20inscriptions.`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-bold transition-colors"

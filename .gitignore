@@ -55,3 +55,6 @@ uploads/*
 
 # vercel
 .vercel
+
+# TestSprite failure artifacts
+.testsprite/
