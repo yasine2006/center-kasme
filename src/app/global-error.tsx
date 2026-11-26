@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { createRequestId, logError } from "@/lib/logger";
+
 export default function GlobalError({
   error,
   retry,
@@ -7,6 +10,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  useEffect(() => {
+    logError("app.global-error", error, { digest: error.digest, requestId: createRequestId() });
+  }, [error]);
+
   return (
     <html lang="fr">
       <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#f3f6fb", color: "#0f1b33" }}>

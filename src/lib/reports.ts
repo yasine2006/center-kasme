@@ -6,6 +6,9 @@ import { invoiceStatus, invoiceTotals, statusMeta } from "@/lib/fees";
 import { formatDate, formatPeriod } from "@/lib/format";
 import { enrollmentAnchor, lateDaysForMonth, monthlyDueDate } from "@/lib/late-days";
 
+/** Hard cap on rows loaded for one report so an export cannot read the whole table. */
+const MAX_REPORT_ROWS = 2000;
+
 export type DatasetStats = {
   totalCount: number;
   totalDue?: number;
@@ -68,10 +71,14 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     }
   }
 
+  // La recherche (bornée) ne s'exécute qu'une fois par requête ; toutes les
+  // branches réutilisent le même filtre Prisma au lieu de la relancer.
+  const searchWhere = await studentSearchWhere(q, schoolId);
+
   const studentWhere: Prisma.StudentWhereInput = {
     schoolId,
     archived: false,
-    ...(await studentSearchWhere(q, schoolId)),
+    ...searchWhere,
     ...(groupId || specialtyId
       ? { enrollments: { some: { ...(groupId ? { groupId } : {}), ...(specialtyId ? { group: { specialtyId } } : {}) } } }
       : {}),
@@ -114,7 +121,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         student: {
           schoolId,
           archived: false,
-          ...(await studentSearchWhere(q, schoolId)),
+          ...searchWhere,
         },
         ...groupInvoiceFilter,
         periodStart: {
@@ -148,6 +155,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         },
       },
       orderBy: [{ periodStart: "desc" }],
+      take: MAX_REPORT_ROWS,
     });
 
     let totalDue = 0;
@@ -279,7 +287,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         student: {
           schoolId,
           archived: false,
-          ...(await studentSearchWhere(q, schoolId)),
+          ...searchWhere,
         },
         ...groupInvoiceFilter,
         ...(range(from, to) ? { month: range(from, to) } : {}),
@@ -310,6 +318,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         },
       },
       orderBy: [{ month: "desc" }],
+      take: MAX_REPORT_ROWS,
     });
 
     let totalDue = 0;
@@ -408,7 +417,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
           student: {
             schoolId,
             archived: false,
-            ...(await studentSearchWhere(q, schoolId)),
+            ...searchWhere,
           },
         },
         ...groupPaymentFilter,
@@ -423,6 +432,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         },
       },
       orderBy: { paidAt: "desc" },
+      take: MAX_REPORT_ROWS,
     });
 
     let totalPaid = 0;
@@ -474,7 +484,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
         student: {
           schoolId,
           archived: false,
-          ...(await studentSearchWhere(q, schoolId)),
+          ...searchWhere,
         },
         ...(groupId ? { groupId } : {}),
         ...(enrollStatus ? { status: enrollStatus as "ACTIVE" | "STOPPED" } : {}),
@@ -482,6 +492,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
       },
       include: { group: { include: { specialty: true, level: true, teacher: true } }, student: true },
       orderBy: [{ status: "asc" }, { startedAt: "desc" }],
+      take: MAX_REPORT_ROWS,
     });
 
     let totalMonthly = 0;
@@ -528,6 +539,7 @@ export async function buildDataset(schoolId: number, sp: URLSearchParams): Promi
     },
     include: { enrollments: { include: { group: { include: { specialty: true, level: true } } } } },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    take: MAX_REPORT_ROWS,
   });
   const stLabel = { ACTIVE: "Actif", PENDING: "En attente", INACTIVE: "Inactif" } as const;
 

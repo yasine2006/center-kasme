@@ -73,11 +73,12 @@ export async function AttendanceView({
           <form action={saveAttendance.bind(null, current.id, day, basePath)}>
             <div className="overflow-x-auto">
               <table className="w-full">
+                <caption className="sr-only">Présences des élèves du groupe {current.name}</caption>
                 <thead className="border-b border-line bg-slate-50/70">
                   <tr>
-                    <th className={th}>Élève</th>
-                    <th className={th}>Statut</th>
-                    <th className={th}>Preuve / Justification</th>
+                    <th scope="col" className={th}>Élève</th>
+                    <th scope="col" className={th}>Statut</th>
+                    <th scope="col" className={th}>Preuve / Justification</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">

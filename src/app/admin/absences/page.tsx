@@ -70,14 +70,15 @@ export default async function AdminAbsencesPage({
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
+            <caption className="sr-only">Liste des absences et retards</caption>
             <thead className="border-b border-line bg-slate-50/70">
               <tr>
-                <th className={th}>Élève</th>
-                <th className={th}>Groupe / Matière</th>
-                <th className={th}>Enseignant</th>
-                <th className={th}>Statut</th>
-                <th className={th}>Preuve / Justification</th>
-                <th className={`${th} text-right`}>Enregistrer</th>
+                <th scope="col" className={th}>Élève</th>
+                <th scope="col" className={th}>Groupe / Matière</th>
+                <th scope="col" className={th}>Enseignant</th>
+                <th scope="col" className={th}>Statut</th>
+                <th scope="col" className={th}>Preuve / Justification</th>
+                <th scope="col" className={`${th} text-right`}>Enregistrer</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">

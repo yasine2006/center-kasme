@@ -67,7 +67,7 @@ export default async function StudentsPage({
         <AutoForm className="flex flex-wrap items-center gap-3 border-b border-line p-4">
           <div className="relative min-w-56 flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input name="q" defaultValue={q} placeholder="Rechercher un élève…" className={`${inputCls} pl-9`} />
+            <input name="q" defaultValue={q} aria-label="Rechercher un élève" placeholder="Rechercher un élève…" className={`${inputCls} pl-9`} />
           </div>
           <select name="specialtyId" defaultValue={specialtyId ?? ""} className={selectCls}>
             <option value="">Toutes les matières</option>
@@ -87,15 +87,16 @@ export default async function StudentsPage({
 
         <div className="overflow-x-auto">
           <table className="w-full">
+            <caption className="sr-only">Liste des élèves</caption>
             <thead className="border-b border-line bg-slate-50/70">
               <tr>
-                <th className={th}>Photo</th>
-                <th className={th}>Nom complet</th>
-                <th className={th}>Matières</th>
-                <th className={th}>Parent</th>
-                <th className={th}>Téléphone</th>
-                <th className={th}>Statut</th>
-                <th className={`${th} text-right`}>Actions</th>
+                <th scope="col" className={th}>Photo</th>
+                <th scope="col" className={th}>Nom complet</th>
+                <th scope="col" className={th}>Matières</th>
+                <th scope="col" className={th}>Parent</th>
+                <th scope="col" className={th}>Téléphone</th>
+                <th scope="col" className={th}>Statut</th>
+                <th scope="col" className={`${th} text-right`}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">

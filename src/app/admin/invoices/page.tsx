@@ -26,8 +26,11 @@ export default async function InvoicesPage({
   const { q, specialtyId, method, status, page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const nameFilter = q
-    ? Prisma.sql`AND (s."firstName" ILIKE ${`%${q}%`} OR s."lastName" ILIKE ${`%${q}%`})`
+  // Même échappement que studentSearchWhere() : %, _ et \ sont des données, pas des jokers ILIKE.
+  const escapeLike = (value: string) => `%${value.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  const nameLike = q ? escapeLike(q) : null;
+  const nameFilter = nameLike
+    ? Prisma.sql`AND (s."firstName" ILIKE ${nameLike} OR s."lastName" ILIKE ${nameLike})`
     : Prisma.empty;
   const specialtyFilter = specialtyId
     ? Prisma.sql`AND EXISTS (SELECT 1 FROM "Enrollment" e JOIN "Group" g ON g.id = e."groupId" WHERE e."studentId" = s.id AND g."specialtyId" = ${Number(specialtyId)})`

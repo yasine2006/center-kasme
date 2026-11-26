@@ -189,8 +189,50 @@ async function planMissing(schoolId: number | undefined, upTo: Date): Promise<Pl
   return plan;
 }
 
+/**
+ * Cheap badge count for the invoices page. Uses the same bounded window and
+ * the same cycle/billable rules as planMissing(), so the number matches what
+ * generateMissingInvoices() will create, but skips building the full plan and
+ * loading fields (fees, group labels) that a count does not need.
+ */
 export async function countMissingInvoices(schoolId: number, upTo = new Date()) {
-  return (await planMissing(schoolId, upTo)).length;
+  const earliestMonth = addMonthsClamped(monthStart(upTo), -(MAX_BILLING_MONTHS - 1));
+
+  const students = await db.student.findMany({
+    where: {
+      schoolId,
+      archived: false,
+      status: "ACTIVE",
+      enrollments: { some: { status: "ACTIVE" } },
+    },
+    select: { id: true, enrollments: { select: { status: true, startedAt: true } } },
+  });
+  if (!students.length) return 0;
+
+  const existing = await db.invoice.findMany({
+    where: { studentId: { in: students.map((s) => s.id) }, month: { gte: earliestMonth } },
+    select: { studentId: true, month: true },
+  });
+  const taken = new Set(existing.map((i) => `${i.studentId}:${monthKey(i.month)}`));
+
+  let count = 0;
+  for (const s of students) {
+    const anchor = billingAnchor(s.enrollments);
+    if (!anchor) continue;
+
+    const active = s.enrollments.filter((e) => e.status === "ACTIVE");
+    if (!active.length) continue;
+
+    const currentIndex = cycleIndexForDate(anchor, upTo);
+    const firstIndex = Math.max(0, currentIndex - (MAX_BILLING_MONTHS - 1));
+    for (let index = firstIndex; index <= currentIndex; index++) {
+      const cycle = cycleAt(anchor, index);
+      if (taken.has(`${s.id}:${monthKey(cycle.month)}`)) continue;
+      if (!enrollmentsBillableFor(active, cycle.end).length) continue;
+      count++;
+    }
+  }
+  return count;
 }
 
 export async function generateMissingInvoices(schoolId?: number, upTo = new Date()) {

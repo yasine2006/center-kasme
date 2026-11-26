@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateMissingInvoices, monthKey } from "@/lib/invoicing";
+import { createRequestId, logError, REQUEST_ID_HEADER } from "@/lib/logger";
 import { requireSecret, safeEqual } from "@/lib/secrets";
 
 function isAuthorized(request: Request, secret: string) {
@@ -9,19 +10,41 @@ function isAuthorized(request: Request, secret: string) {
   return safeEqual(provided, secret);
 }
 
-async function run(request: Request) {
-  let secret: string;
-  try {
-    secret = requireSecret("CRON_SECRET");
-  } catch {
-    return NextResponse.json({ ok: false, error: "CRON_SECRET is not configured" }, { status: 503 });
-  }
-  if (!isAuthorized(request, secret)) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-  }
+function jsonError(message: string, status: number, requestId: string) {
+  return NextResponse.json(
+    { ok: false, error: message, requestId },
+    { status, headers: { [REQUEST_ID_HEADER]: requestId } },
+  );
+}
 
-  const generated = await generateMissingInvoices();
-  return NextResponse.json({ ok: true, generated, month: monthKey(new Date()), at: new Date().toISOString() });
+async function run(request: Request) {
+  const requestId = createRequestId();
+  try {
+    let secret: string;
+    try {
+      secret = requireSecret("CRON_SECRET");
+    } catch {
+      return jsonError("CRON_SECRET is not configured", 503, requestId);
+    }
+    if (!isAuthorized(request, secret)) {
+      return jsonError("unauthorized", 401, requestId);
+    }
+
+    const generated = await generateMissingInvoices();
+    return NextResponse.json(
+      {
+        ok: true,
+        generated,
+        month: monthKey(new Date()),
+        at: new Date().toISOString(),
+        requestId,
+      },
+      { headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  } catch (error) {
+    logError("cron.monthly-invoices", error, { requestId });
+    return jsonError("internal error", 500, requestId);
+  }
 }
 
 /**

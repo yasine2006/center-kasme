@@ -3,6 +3,13 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 
 const MAX_TOKENS = 5;
+/** Hard cap on the student IDs returned to callers that build an `IN (...)` filter. */
+export const MAX_SEARCH_RESULTS = 500;
+
+/** Escape LIKE/ILIKE metacharacters so user input stays literal in the pattern. */
+export function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
 
 export function searchTokens(q?: string | null): string[] {
   return (q ?? "")
@@ -17,7 +24,7 @@ export async function studentSearchWhere(q: string | undefined | null, schoolId:
   if (!tokens.length) return {};
 
   const conditions = tokens.map((token) => {
-    const like = `%${token.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    const like = `%${escapeLikePattern(token)}%`;
     return Prisma.sql`(
       unaccent(s."firstName") ILIKE unaccent(${like})
       OR unaccent(s."lastName") ILIKE unaccent(${like})
@@ -35,6 +42,8 @@ export async function studentSearchWhere(q: string | undefined | null, schoolId:
   const rows = await db.$queryRaw<{ id: number }[]>`
     SELECT s.id FROM "Student" s
     WHERE s."schoolId" = ${schoolId} AND s.archived = false AND ${Prisma.join(conditions, " AND ")}
+    ORDER BY s.id
+    LIMIT ${MAX_SEARCH_RESULTS}
   `;
 
   return { id: { in: rows.map((r) => r.id) } };

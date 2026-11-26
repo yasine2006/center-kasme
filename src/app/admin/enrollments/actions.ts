@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { ensureCurrentInvoice } from "@/lib/invoicing";
+import { logError } from "@/lib/logger";
 import { requireRole } from "@/lib/session";
 
 const schema = z.object({
@@ -49,7 +50,7 @@ export async function createEnrollment(_: EnrollFormState, formData: FormData): 
   try {
     invoiceId = (await ensureCurrentInvoice(student.id))?.id ?? null;
   } catch (error) {
-    console.error("ensureCurrentInvoice failed after enrollment", error);
+    logError("admin.enrollments.create", error, { studentId: student.id, groupId: group.id });
   }
 
   await audit(session, "CREATE", "Enrollment", student.id, { groupId: group.id, invoiceId });
@@ -76,7 +77,10 @@ export async function reactivateEnrollment(id: number) {
   try {
     await ensureCurrentInvoice(e.studentId);
   } catch (error) {
-    console.error("ensureCurrentInvoice failed after reactivation", error);
+    logError("admin.enrollments.reactivate", error, {
+      enrollmentId: id,
+      studentId: e.studentId,
+    });
   }
   await audit(session, "UPDATE", "Enrollment", id, { status: "ACTIVE" });
   revalidatePath("/admin", "layout");

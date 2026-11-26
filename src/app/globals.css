@@ -41,10 +41,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Recharts renders an outline on focus: hide it */
-.recharts-wrapper,
-.recharts-surface {
-  outline: none;
+/* Keep keyboard focus visible on chart elements without affecting layout */
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
 }
 
 /* ── Scroll reveal animations ── */

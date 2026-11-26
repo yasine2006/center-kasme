@@ -3,10 +3,13 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { invoiceTotals } from "@/lib/fees";
 import { formatDH, formatPeriod } from "@/lib/format";
-import { billingAnchor, cycleForMonth, enrollmentsBillableFor, monthKey, monthStart } from "@/lib/invoicing";
+import { addMonthsClamped, billingAnchor, cycleForMonth, enrollmentsBillableFor, monthKey, monthStart } from "@/lib/invoicing";
 import { enrollmentAnchor, isDueAsOf, lateDaysForMonth, monthlyDueDate } from "@/lib/late-days";
 
 export const REMINDER_TITLE = "Rappel de paiement";
+
+/** Daily cron looks back at most this many billing months (current + previous). */
+export const MAX_REMINDER_MONTHS = 3;
 
 export type ReminderStatus = "PAID" | "PARTIAL" | "UNPAID" | "MISSING";
 
@@ -216,12 +219,16 @@ export async function sendReminders(schoolId: number, month: Date, opts: RemindO
  * has passed and that is not fully paid. One notification per invoice per day.
  */
 export async function sendOverdueReminders(schoolId: number, now = new Date()) {
+  const thisMonth = monthStart(now);
+  // Fenêtre bornée : le cron ne traite que les mois de facturation récents.
+  // L'échéance effective reste recalculée ci-dessous depuis l'ancre d'inscription.
+  const windowStart = addMonthsClamped(thisMonth, -(MAX_REMINDER_MONTHS - 1));
   const invoices = await db.invoice.findMany({
     where: {
       student: { schoolId, archived: false, status: "ACTIVE" },
       // Pré-filtre large : l'échéance effective est recalculée ci-dessous, on ne
       // fait pas confiance à un Invoice.dueDate éventuellement périmé.
-      month: { lte: monthStart(now) },
+      month: { gte: windowStart, lte: thisMonth },
     },
     include: {
       lines: { select: { amount: true } },

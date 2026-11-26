@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createRequestId, logError } from "@/lib/logger";
 
 export default function Error({
   error,
@@ -10,7 +11,7 @@ export default function Error({
   retry: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logError("app.error", error, { digest: error.digest, requestId: createRequestId() });
   }, [error]);
 
   return (

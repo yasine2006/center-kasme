@@ -70,13 +70,14 @@ export default async function RegistrationsPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
+            <caption className="sr-only">Liste des inscriptions</caption>
             <thead className="border-y border-line bg-slate-50/70">
               <tr>
-                <th className={th}>Nom élève</th>
-                <th className={th}>Matières</th>
-                <th className={th}>Date d&apos;inscription</th>
-                <th className={th}>Statut</th>
-                <th className={th} />
+                <th scope="col" className={th}>Nom élève</th>
+                <th scope="col" className={th}>Matières</th>
+                <th scope="col" className={th}>Date d&apos;inscription</th>
+                <th scope="col" className={th}>Statut</th>
+                <th scope="col" className={th} aria-label="Actions" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
