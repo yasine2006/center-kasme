@@ -194,6 +194,11 @@ function sanitizePhoneForWhatsApp(phone: string | null | undefined): string {
   return digits.length > 0 ? digits : "212642539608";
 }
 
+/** Dialable international tel: link, even when the stored number is local. */
+function telHref(phone: string | null | undefined): string {
+  return `tel:+${sanitizePhoneForWhatsApp(phone)}`;
+}
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "EC";
@@ -237,7 +242,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
             </span>
           </div>
           <div className="flex items-center gap-4 text-slate-400 text-[11px]">
-            <a href={`tel:${schoolPhone}`} className="hover:text-white flex items-center gap-1 transition-colors">
+            <a href={telHref(schoolPhone)} className="hover:text-white flex items-center gap-1 transition-colors">
               <Phone className="h-3 w-3 text-brand-400" />
               <span>{schoolPhone}</span>
             </a>
@@ -972,7 +977,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
               <a
-                href={`tel:${schoolPhone}`}
+                href={telHref(schoolPhone)}
                 className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 hover:border-brand-500 hover:shadow-md transition-all"
               >
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center shrink-0">
@@ -1090,7 +1095,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <span>Discussion WhatsApp</span>
               </a>
               <a
-                href={`tel:${schoolPhone}`}
+                href={telHref(schoolPhone)}
                 className="inline-flex items-center gap-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-200 border border-navy-800 px-4 py-2 text-xs font-bold transition-colors"
               >
                 <Phone className="h-3.5 w-3.5" />

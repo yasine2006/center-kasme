@@ -9,7 +9,7 @@ import { formatDH } from "@/lib/format";
 
 export async function GET(req: NextRequest) {
   const session = await requireApiRole("ADMIN");
-  if (!session) return new Response("Non authentifié", { status: 401 });
+  if (!session) return Response.json({ error: "Non authentifié" }, { status: 401 });
 
   const sp = req.nextUrl.searchParams;
   const format = sp.get("format") === "pdf" ? "pdf" : "xlsx";

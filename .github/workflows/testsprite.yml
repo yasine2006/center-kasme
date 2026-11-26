@@ -1,0 +1,68 @@
+name: TestSprite
+
+# Vercel deploys every PR preview, so the gate runs when a Preview deployment
+# succeeds. Add TESTSPRITE_API_KEY as a repository Actions secret first.
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  testsprite-tests:
+    concurrency:
+      group: testsprite-${{ github.event.deployment.sha }}
+      cancel-in-progress: true
+    # Skip production deployments and non-successful deployment events.
+    # Security: disable Vercel deployments from forks, because this workflow
+    # runs at the deployed commit with the repository's TESTSPRITE_API_KEY.
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment_status.state == 'success' &&
+      !github.event.deployment.production_environment &&
+      github.event.deployment.environment != 'production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm i -g @testsprite/testsprite-cli@latest
+
+      - name: Run frontend test on this PR's preview
+        env:
+          PREVIEW_URL: ${{ github.event.deployment_status.environment_url }}
+        run: >-
+          testsprite ci run
+          --project "3097a6e0-e822-4cd5-95bf-b5265b140134"
+          --env "production"
+          --target-url "$PREVIEW_URL"
+          --fail-on-skipped
+          --summary-file testsprite-frontend.json
+
+      - name: Run API tests on this PR's preview
+        env:
+          PREVIEW_URL: ${{ github.event.deployment_status.environment_url }}
+        run: >-
+          testsprite ci run
+          --project "6c633097-91dc-4391-a8dc-33f210dc0804"
+          --env "production"
+          --target-url "$PREVIEW_URL"
+          --fail-on-skipped
+          --summary-file testsprite-api.json
+
+      - name: Upload TestSprite reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: testsprite-results
+          path: |
+            testsprite-frontend.json
+            testsprite-api.json
+          if-no-files-found: ignore
