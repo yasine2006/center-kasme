@@ -209,7 +209,7 @@ model Invoice {
   month       DateTime // 1st of the month containing periodStart (UTC) — unique per student
   periodStart DateTime // cycle start (inclusive)
   periodEnd   DateTime // cycle end (exclusive); the next cycle starts here
-  dueDate     DateTime // periodEnd + 5 days
+  dueDate     DateTime // anniversaire mensuel de l'ancre d'inscription (recalculé à la lecture)
 
   student  Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   lines    InvoiceLine[]
