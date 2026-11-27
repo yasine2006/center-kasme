@@ -229,6 +229,20 @@ vitest.config.mts         # configuration des tests
 
 ---
 
-## 8. Documentation
+## 8. Qualité, observabilité et CI
+
+- **Un seul ORM** : Prisma 6. Les requêtes avancées utilisent `$queryRaw` / `Prisma.sql`, les vues ou des modèles de lecture — aucun second ORM n'est ajouté.
+- **Logs** : `src/lib/logger.ts` émet des JSON structurés avec un `requestId`. `instrumentation.ts` journalise le démarrage du serveur.
+- **Healthcheck** : `GET /api/health` renvoie `status`, `db`, `requestId` et `commit`. C'est le moyen le plus simple de vérifier qu'un déploiement est actif.
+- **Bornes** : les rapports et la recherche sont limités (`MAX_REPORT_ROWS`, `MAX_SEARCH_RESULTS`) et les indexes `Payment` / `AuditLog` sont dans la migration Prisma.
+- **Badge Next.js** : masqué via `devIndicators: false` dans `next.config.ts`. Après modification de la config, redémarrer `npm run dev`.
+- **Vérifications locales** : `npm run typecheck`, `npm run lint`, `npm test` (Vitest) et `npm run build`.
+- **TestSprite** : `.github/workflows/testsprite.yml` lance 1 test UI et 5 tests API sur chaque preview Vercel. Le secret Actions `TESTSPRITE_API_KEY` est obligatoire. Le GitHub App TestSprite peut en plus commenter les pull requests.
+- **Protection de `main`** (optionnelle) : règles *Branches* → *Require status checks* avec le check `testsprite-tests`.
+- **Rotation des secrets** : révoquer immédiatement toute clé ou tout token partagé dans un chat ou un ticket, puis en générer un nouveau par environnement.
+
+---
+
+## 9. Documentation
 
 - Déploiement client : [`docs/deploiement-client.md`](docs/deploiement-client.md)

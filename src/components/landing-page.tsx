@@ -76,7 +76,7 @@ const languages = [
     flag: "🇪🇸",
     name: "Espagnol",
     tagline: "Pratique Orale & Échanges",
-    detail: "Apprenez une des langues les plus parlées au monde à travers des ateliers vivants.",
+    detail: "Apprenez l'une des langues les plus parlées au monde à travers des ateliers vivants.",
     levels: "A1 → B2",
     popular: false,
   },
@@ -96,7 +96,7 @@ const certifications = [
     target: "Band 6.5 → 8.5",
     color: "from-rose-500 to-red-600",
     desc: "Test officiel pour les universités anglophones (UK, Canada, Europe) et l'immigration.",
-    features: ["Épreuves types chronométrées", "Simulations de speaking 1-to-1", "Stratégies de rédaction Task 1 & 2"],
+    features: ["Épreuves types chronométrées", "Simulations d'expression orale individuelles", "Stratégies de rédaction Task 1 & 2"],
   },
   {
     name: "TOEFL iBT",
@@ -116,8 +116,8 @@ const certifications = [
     name: "DELF / DALF",
     target: "Diplôme à vie (A1-C1)",
     color: "from-emerald-500 to-teal-600",
-    desc: "Diplôme d'État français délivré par le Ministère de l'Éducation Nationale.",
-    features: ["Validité permanente à vie", "Accès direct aux universités françaises", "Reconnaissance internationale"],
+    desc: "Diplôme d'État français délivré par le ministère de l'Éducation nationale.",
+    features: ["Validité à vie", "Accès direct aux universités françaises", "Reconnaissance internationale"],
   },
 ];
 
@@ -151,7 +151,7 @@ const plans = [
   {
     title: "Préparation Examens",
     badge: "Objectif Réussite",
-    desc: "Préparation sur-mesure aux tests IELTS, TOEFL, TCF et DELF.",
+    desc: "Préparation sur mesure aux tests IELTS, TOEFL, TCF et DELF.",
     hours: "Programme ciblé",
     points: [
       "Examens blancs en conditions réelles",
@@ -170,7 +170,7 @@ const faqs = [
   },
   {
     q: "Quels sont les créneaux horaires disponibles ?",
-    a: "Nous proposons des cours en semaine (matin, après-midi et cours du soir après 18h) ainsi que des sessions spéciales le samedi et le dimanche pour les élèves et professionnels.",
+    a: "Nous proposons des cours en semaine (matin, après-midi et cours en soirée après 18 h) ainsi que des sessions spéciales le samedi et le dimanche pour les élèves et professionnels.",
   },
   {
     q: "Obtient-on une attestation à la fin de la formation ?",
@@ -214,7 +214,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
   const schoolPhone = school?.phone?.trim() || "0642-539608";
   const schoolEmail = school?.email?.trim() || "elitekacemcenter@gmail.com";
   const schoolAddress =
-    school?.address?.trim() || "Boulevard Mohammed V, Dar Attalib, Appt N°4, Khénifra";
+    school?.address?.trim() || "Boulevard Mohammed V, Dar Attalib, Appt n° 4, Khénifra";
   const waNumber = sanitizePhoneForWhatsApp(schoolPhone);
 
   const nav = [
@@ -238,7 +238,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
               <Sparkles className="h-3 w-3" /> Inscriptions ouvertes 2026
             </span>
             <span className="text-slate-300 hidden md:inline">
-              Nouveaux groupes d&apos;anglais, allemand, français et certifications.
+              Nouveaux groupes d&apos;anglais, d&apos;allemand et de français, ainsi que des sessions de certification.
             </span>
           </div>
           <div className="flex items-center gap-4 text-slate-400 text-[11px]">
@@ -246,7 +246,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
               <Phone className="h-3 w-3 text-brand-400" />
               <span>{schoolPhone}</span>
             </a>
-            <span className="text-slate-700">|</span>
+            <span className="text-slate-700" aria-hidden="true">|</span>
             <span className="flex items-center gap-1 text-slate-300">
               <MapPin className="h-3 w-3 text-brand-400" />
               <span>Khénifra, Maroc</span>
@@ -277,7 +277,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 {schoolName}
               </div>
               <div className="text-slate-500 text-[11px] sm:text-xs font-medium">
-                Centre de Langues & Communication
+                Centre de langues et de communication
               </div>
             </div>
           </Link>
@@ -303,7 +303,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 className="inline-flex items-center gap-2 rounded-xl bg-navy-950 hover:bg-navy-900 text-white px-5 py-2.5 font-semibold text-sm shadow-sm transition-all duration-200 hover:-translate-y-0.5"
               >
                 <LayoutDashboard className="h-4 w-4 text-brand-400" />
-                <span>Mon Espace ({session.role.toLowerCase()})</span>
+                <span>Mon espace ({session.role.toLowerCase()})</span>
                 <ArrowRight className="h-4 w-4 text-slate-400" />
               </Link>
             ) : (
@@ -312,7 +312,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 className="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 font-semibold text-sm shadow-md shadow-brand-500/20 transition-all duration-200 hover:-translate-y-0.5"
               >
                 <GraduationCap className="h-4 w-4" />
-                <span>Espace Élève & Connexion</span>
+                <span>Espace élève / Connexion</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             )}
@@ -323,7 +323,8 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
             type="button"
             className="lg:hidden text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Ouvrir le menu"
+            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -360,7 +361,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-3 font-semibold text-sm shadow-sm shadow-brand-500/20"
                 >
                   <GraduationCap className="h-4 w-4" />
-                  <span>Espace Élève / Connexion</span>
+                  <span>Espace élève / Connexion</span>
                 </Link>
               )}
             </div>
@@ -416,7 +417,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                       backgroundClip: "text",
                     }}
                   >
-                    langues.
+                    compétences linguistiques.
                   </span>
                   <br />
                   <span className="text-white/85">Ouvrez vos horizons.</span>
@@ -425,7 +426,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <p className="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed animate-fade-up delay-200">
                   Bienvenue à{" "}
                   <span className="text-white font-semibold">{schoolName}</span>. Programmes immersifs en{" "}
-                  <span className="text-elite-gold font-semibold">Anglais, Allemand, Français, Espagnol et Italien</span>,
+                  <span className="text-elite-gold font-semibold">anglais, allemand, français, espagnol et italien</span>,
                   et préparation intensive aux certifications internationales.
                 </p>
 
@@ -460,8 +461,8 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="mt-11 pt-8 border-t border-white/10 grid grid-cols-3 gap-5 animate-fade-up delay-400">
                   {[
                     { value: "98%", label: "Taux de réussite", icon: TrendingUp },
-                    { value: "+1200", label: "Apprenants formés", icon: Users },
-                    { value: "100%", label: "Profs qualifiés", icon: Award },
+                    { value: "+1 200", label: "Apprenants formés", icon: Users },
+                    { value: "100%", label: "Formateurs qualifiés", icon: Award },
                   ].map(({ value, label, icon: Icon }) => (
                     <div key={label} className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-1.5">
@@ -476,9 +477,16 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 {/* Trust logos row — language flags */}
                 <div className="mt-8 flex items-center gap-3 flex-wrap animate-fade-up delay-500">
                   <span className="text-[11px] text-slate-500 font-medium mr-1">Langues :</span>
-                  {["🇬🇧", "🇫🇷", "🇩🇪", "🇪🇸", "🇮🇹"].map((flag) => (
+                  {[
+                    { flag: "🇬🇧", name: "Anglais" },
+                    { flag: "🇫🇷", name: "Français" },
+                    { flag: "🇩🇪", name: "Allemand" },
+                    { flag: "🇪🇸", name: "Espagnol" },
+                    { flag: "🇮🇹", name: "Italien" },
+                  ].map(({ flag, name }) => (
                     <span
                       key={flag}
+                      aria-label={name}
                       className="text-xl select-none bg-white/8 hover:bg-white/14 rounded-lg px-2.5 py-1.5 transition-colors cursor-default border border-white/10"
                     >
                       {flag}
@@ -532,14 +540,14 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white">Centre d&apos;élite</div>
-                      <div className="text-[11px] text-slate-300">Certifié & Agréé</div>
+                      <div className="text-[11px] text-slate-300">Certifié et agréé</div>
                     </div>
                   </div>
 
                   {/* Left floating mini-badge */}
                   <div className="absolute -left-5 top-1/2 -translate-y-1/2 bg-brand-600 text-white rounded-xl px-3 py-2 shadow-lg border border-brand-500/50 flex items-center gap-2 animate-fade-left delay-300">
                     <GraduationCap className="h-4 w-4" />
-                    <span className="text-[11px] font-bold whitespace-nowrap">5 Langues</span>
+                    <span className="text-[11px] font-bold whitespace-nowrap">5 langues</span>
                   </div>
                 </div>
               </div>
@@ -570,7 +578,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center mb-5">
                   <Users className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold text-navy-950">Effectifs Réduits</h3>
+                <h3 className="text-lg font-bold text-navy-950">Effectifs réduits</h3>
                 <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
                   De 8 à 12 élèves par groupe pour assurer un temps de parole optimal à chacun et un suivi personnalisé.
                 </p>
@@ -581,7 +589,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5">
                   <TrendingUp className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold text-navy-950">Méthode Communicative</h3>
+                <h3 className="text-lg font-bold text-navy-950">Méthode communicative</h3>
                 <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
                   Travail équilibré sur les 4 compétences : écoute, prise de parole, lecture et rédaction structurée.
                 </p>
@@ -592,9 +600,9 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
                   <Clock className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold text-navy-950">Flexibilité des Horaires</h3>
+                <h3 className="text-lg font-bold text-navy-950">Flexibilité des horaires</h3>
                 <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
-                  Créneaux en matinée, en après-midi, en cours du soir ou le weekend selon vos contraintes d&apos;emploi du temps.
+                  Créneaux en matinée, en après-midi, en soirée ou le week-end selon vos contraintes d&apos;emploi du temps.
                 </p>
               </div>
             </div>
@@ -607,12 +615,12 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
               <Reveal>
               <div>
-                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Catalogue Pédagogique</span>
+                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Catalogue pédagogique</span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
                   Formations linguistiques certifiées
                 </h2>
                 <p className="text-slate-600 mt-2 text-sm sm:text-base max-w-xl">
-                  Du niveau débutant complet aux niveaux avancés, nos cursus sont structurés selon le cadre CECRL.
+                  Du niveau débutant aux niveaux avancés, nos cursus sont structurés selon le cadre CECRL.
                 </p>
               </div>
               </Reveal>
@@ -649,7 +657,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">Cours enfants & adultes</span>
+                    <span className="text-xs font-medium text-slate-500">Cours enfants et adultes</span>
                     <a
                       href={`https://wa.me/${waNumber}?text=Bonjour%2C%20je%20souhaite%20m'inscrire%20au%20cours%20de%20${encodeURIComponent(
                         item.name
@@ -671,11 +679,11 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   <div className="h-10 w-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold mb-4">
                     <Languages className="h-5 w-5" />
                   </div>
-                  <h3 className="text-xl font-bold text-white">Cours Particuliers 1-to-1</h3>
+                  <h3 className="text-xl font-bold text-white">Cours particuliers individuels</h3>
                   <div className="text-xs font-medium text-brand-300 mt-1">Coaching VIP sur mesure</div>
                   <p className="text-sm text-slate-300 mt-3 leading-relaxed">
-                    Un formateur dédié pour cibler précisément vos besoins : préparation d&apos;entretien, rédaction de thèse,
-                    ou communication professionnelle d&apos;urgence.
+                    Un formateur dédié pour cibler précisément vos besoins : préparation aux entretiens, rédaction de thèses
+                    ou communication professionnelle urgente.
                   </p>
                 </div>
 
@@ -699,9 +707,8 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
         <section id="certifications" className="py-24 bg-slate-50 border-b border-slate-200/80">
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <Reveal>
-            <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Examens & Certifications</span>
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Examens et certifications</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
                 Passez vos examens internationaux avec sérénité
               </h2>
@@ -709,7 +716,6 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 Un accompagnement méthodologique calibré pour valider le score exact dont vous avez besoin pour vos projets.
               </p>
             </div>
-            </Reveal>
             </Reveal>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -762,13 +768,13 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
-                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Pédagogie & Cadre</span>
+                <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Pédagogie et cadre</span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
                   Un encadrement d&apos;élite adapté à chaque génération
                 </h2>
                 <p className="text-slate-600 mt-4 leading-relaxed text-sm sm:text-base">
                   À <strong>{schoolName}</strong>, nous croyons qu&apos;une langue vivante ne s&apos;apprend pas par cœur
-                  sur un livre théorique, mais se pratique activement au quotidien.
+                  dans un manuel théorique, mais se pratique activement au quotidien.
                 </p>
 
                 <div className="mt-8 space-y-4">
@@ -777,7 +783,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                       <Compass className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-navy-950 text-base">Test de Positionnement Précis</h3>
+                      <h3 className="font-bold text-navy-950 text-base">Test de positionnement précis</h3>
                       <p className="text-slate-600 text-sm mt-1">
                         Chaque nouvel arrivant passe une évaluation écrite et orale pour intégrer un groupe de son niveau exact.
                       </p>
@@ -789,7 +795,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                       <ShieldCheck className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-navy-950 text-base">Suivi Numérique & Présences</h3>
+                      <h3 className="font-bold text-navy-950 text-base">Suivi numérique et présences</h3>
                       <p className="text-slate-600 text-sm mt-1">
                         Les parents et étudiants accèdent à leur espace élève pour consulter l&apos;assiduité, les emplois du
                         temps et les reçus de paiement en temps réel.
@@ -802,7 +808,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                       <Award className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-navy-950 text-base">Certificat de Fin de Cycle</h3>
+                      <h3 className="font-bold text-navy-950 text-base">Certificat de fin de cycle</h3>
                       <p className="text-slate-600 text-sm mt-1">
                         Validation officielle des compétences avec attestation détaillée selon le standard européen.
                       </p>
@@ -829,7 +835,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 <div className="space-y-4 pt-6">
                   <div className="bg-brand-600 text-white p-5 rounded-2xl shadow-lg">
                     <div className="text-2xl font-extrabold">100%</div>
-                    <div className="text-xs text-blue-100 mt-1">Interactif & Pratique</div>
+                    <div className="text-xs text-blue-100 mt-1">Interactif et pratique</div>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -848,12 +854,12 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Formules de Cours</span>
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Formules de cours</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
                 Des formules conçues pour chaque rythme
               </h2>
               <p className="text-slate-600 mt-3 text-sm sm:text-base">
-                Tarifs flexibles et adaptés à vos objectifs. Contactez-nous pour connaître les tarifs exacts de votre session.
+                Des formules adaptées à vos objectifs. Contactez-nous pour connaître le tarif exact de votre session.
               </p>
             </div>
             </Reveal>
@@ -921,7 +927,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           <div className="max-w-4xl mx-auto px-5 lg:px-8">
             <Reveal>
             <div className="text-center mb-12">
-              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Questions Fréquentes</span>
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Questions fréquentes</span>
               <h2 className="text-3xl font-extrabold text-navy-950 tracking-tight mt-2">
                 Tout ce que vous devez savoir
               </h2>
@@ -939,6 +945,8 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                     <button
                       type="button"
                       onClick={() => setOpenFaq(isOpen ? null : idx)}
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-panel-${idx}`}
                       className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4 font-bold text-navy-950 text-base hover:text-brand-600 transition-colors"
                     >
                       <span>{faq.q}</span>
@@ -949,7 +957,10 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                       />
                     </button>
                     {isOpen && (
-                      <div className="px-5 sm:px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4">
+                      <div
+                        id={`faq-panel-${idx}`}
+                        className="px-5 sm:px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4"
+                      >
                         {faq.a}
                       </div>
                     )}
@@ -965,7 +976,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
           <div className="max-w-7xl mx-auto px-5 lg:px-8">
             <Reveal>
             <div className="text-center max-w-xl mx-auto mb-14">
-              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Contact & Accès</span>
+              <span className="text-brand-600 font-bold uppercase tracking-wider text-xs">Contact et accès</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-950 tracking-tight mt-2">
                 Venez nous rencontrer
               </h2>
@@ -997,7 +1008,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                   <Mail className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Courriel</div>
                   <div className="text-base font-bold text-navy-950 mt-0.5 truncate">{schoolEmail}</div>
                 </div>
               </a>
@@ -1021,7 +1032,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 text-sm font-bold transition-colors shadow-md shadow-blue-600/20"
               >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 <span>Facebook</span>
               </a>
               <a
@@ -1030,7 +1041,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-5 py-3 text-sm font-bold transition-all shadow-md shadow-pink-500/20"
               >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 <span>Instagram</span>
               </a>
             </div>
@@ -1075,7 +1086,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
               )}
               <div>
                 <div className="text-lg font-bold text-white">{schoolName}</div>
-                <div className="text-xs text-slate-400">Centre de Langues & Communication</div>
+                <div className="text-xs text-slate-400">Centre de langues et de communication</div>
               </div>
             </div>
 
@@ -1107,7 +1118,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-bold transition-colors"
               >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 <span>Facebook</span>
               </a>
               <a
@@ -1116,7 +1127,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 py-2 text-xs font-bold transition-all"
               >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 <span>Instagram</span>
               </a>
             </div>
@@ -1124,7 +1135,7 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
           {/* Col 2: Navigation Links */}
           <div className="flex flex-col gap-2.5 text-xs text-slate-400">
-            <div className="text-white text-sm font-bold mb-2">Navigation Rapide</div>
+            <div className="text-white text-sm font-bold mb-2">Navigation rapide</div>
             {nav.map(([label, href]) => (
               <a key={label} href={href} className="hover:text-white transition-colors">
                 {label}
@@ -1134,15 +1145,15 @@ export function LandingPage({ school, session, dashboardUrl }: LandingPageProps)
 
           {/* Col 3: Portal & Administrative Access */}
           <div className="flex flex-col gap-2.5 text-xs text-slate-400">
-            <div className="text-white text-sm font-bold mb-2">Accès & Plateforme</div>
+            <div className="text-white text-sm font-bold mb-2">Accès et plateforme</div>
             <Link href="/login" className="text-brand-400 hover:text-brand-300 font-bold transition-colors">
-              Espace Élève / Connexion →
+              Espace élève / Connexion →
             </Link>
             <Link href="/login" className="hover:text-white transition-colors">
-              Espace Enseignant
+              Espace enseignant
             </Link>
             <Link href="/login" className="hover:text-white transition-colors">
-              Portail Administration
+              Portail administration
             </Link>
             <span className="text-slate-500 text-[11px] mt-2 block">{schoolAddress}</span>
           </div>
